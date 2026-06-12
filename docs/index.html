@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation — Simulateur Capacité-Commande | Maghreb Steel</title>
+  <meta name="description" content="Documentation complète du simulateur d'optimisation Capacité-Commande développé pour Maghreb Steel — EMINES UM6P 2026." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-brand">
+    <span class="nav-logo">🏭</span>
+    <span class="nav-title">Maghreb Steel <span class="nav-sub">— Docs</span></span>
+  </div>
+  <div class="nav-links">
+    <a href="#apercu" class="nav-link">Aperçu</a>
+    <a href="#application" class="nav-link">Application</a>
+    <a href="#modele" class="nav-link">Modèle LP</a>
+    <a href="#code" class="nav-link">Code</a>
+    <a href="#scenarios" class="nav-link">Scénarios</a>
+    <a href="#resultats" class="nav-link">Résultats</a>
+    <a href="#questions" class="nav-link">Questions</a>
+  </div>
+  <button class="nav-launch" onclick="window.open('http://localhost:8501','_blank')">
+    🚀 Lancer l'App
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════ HERO -->
+<header class="hero" id="top">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      EMINES UM6P · Promotion 2026 · Recherche Opérationnelle
+    </div>
+    <h1 class="hero-title">
+      Simulateur<br>
+      <span class="gradient-text">Capacité-Commande</span>
+    </h1>
+    <p class="hero-desc">
+      Documentation technique complète du projet d'optimisation industrielle développé<br>
+      en collaboration avec <strong>Maghreb Steel</strong>, leader marocain de la sidérurgie des produits plats.
+    </p>
+    <div class="hero-stats">
+      <div class="stat-item"><span class="stat-val">42.9M</span><span class="stat-lbl">MAD de marge</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item"><span class="stat-val">88%</span><span class="stat-lbl">Taux de service</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item"><span class="stat-val">65</span><span class="stat-lbl">Commandes</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat-item"><span class="stat-val">4</span><span class="stat-lbl">Semaines</span></div>
+    </div>
+    <div class="hero-cta">
+      <a href="#apercu" class="btn-primary">Lire la documentation</a>
+      <a href="http://localhost:8501" target="_blank" class="btn-ghost">Ouvrir l'application →</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-indicator"></div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════ TOC -->
+<div class="toc-sidebar" id="toc">
+  <div class="toc-title">Sur cette page</div>
+  <ul class="toc-list">
+    <li><a href="#apercu" class="toc-link active">1. Aperçu du projet</a></li>
+    <li><a href="#application" class="toc-link">2. L'application web</a>
+      <ul>
+        <li><a href="#tab-plan" class="toc-link toc-sub">Plan de Marche</a></li>
+        <li><a href="#tab-lignes" class="toc-link toc-sub">Utilisation Lignes</a></li>
+        <li><a href="#tab-commandes" class="toc-link toc-sub">Commandes</a></li>
+        <li><a href="#tab-eco" class="toc-link toc-sub">Analyse Économique</a></li>
+        <li><a href="#tab-shadow" class="toc-link toc-sub">Shadow Prices</a></li>
+      </ul>
+    </li>
+    <li><a href="#modele" class="toc-link">3. Modèle mathématique</a>
+      <ul>
+        <li><a href="#variables" class="toc-link toc-sub">Variables</a></li>
+        <li><a href="#objectif" class="toc-link toc-sub">Fonction objectif</a></li>
+        <li><a href="#contraintes" class="toc-link toc-sub">Contraintes</a></li>
+        <li><a href="#chemins" class="toc-link toc-sub">Flux métallurgique</a></li>
+      </ul>
+    </li>
+    <li><a href="#code" class="toc-link">4. Architecture du code</a>
+      <ul>
+        <li><a href="#data-loader" class="toc-link toc-sub">data_loader.py</a></li>
+        <li><a href="#model-py" class="toc-link toc-sub">model.py</a></li>
+        <li><a href="#app-py" class="toc-link toc-sub">app.py</a></li>
+        <li><a href="#main-py" class="toc-link toc-sub">main.py</a></li>
+      </ul>
+    </li>
+    <li><a href="#scenarios" class="toc-link">5. Scénarios</a></li>
+    <li><a href="#resultats" class="toc-link">6. Résultats & Analyse</a></li>
+    <li><a href="#questions" class="toc-link">7. Questions E1–E24</a></li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- ─── SECTION 1 : APERÇU ──────────────────────────────────────── -->
+  <section class="doc-section" id="apercu">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <div>
+        <h2 class="section-title">Aperçu du Projet</h2>
+        <p class="section-subtitle">Contexte industriel et objectifs du simulateur</p>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">ℹ️</span>
+      <div>
+        <strong>Projet réel</strong> — Ce simulateur est développé pour <strong>Maghreb Steel</strong> (Tit Mellil, Casablanca), leader marocain de la sidérurgie des produits plats. Il répond à un besoin opérationnel concret de l'équipe Planification.
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="content-block">
+        <h3 class="block-title">🏭 Contexte industriel</h3>
+        <p>L'usine de Tit Mellil reçoit en continu des <strong>consultations commerciales</strong> : un client demande un tonnage précis d'un produit (famille, grade, épaisseur, largeur) à livrer avant une date donnée, à un prix négocié.</p>
+        <p>Aujourd'hui, cette décision est prise au cas par cas avec un fichier Excel manuel. Le simulateur <strong>automatise et optimise</strong> ce processus sur un horizon de 4 semaines.</p>
+      </div>
+      <div class="content-block">
+        <h3 class="block-title">🎯 4 Objectifs métier</h3>
+        <div class="objective-list">
+          <div class="obj-item">
+            <span class="obj-num">O1</span>
+            <span>Maximiser la <strong>marge sur coût variable</strong> sur 4 semaines</span>
+          </div>
+          <div class="obj-item">
+            <span class="obj-num">O2</span>
+            <span>Respecter toutes les <strong>contraintes industrielles</strong></span>
+          </div>
+          <div class="obj-item">
+            <span class="obj-num">O3</span>
+            <span>Identifier les <strong>commandes non planifiables</strong> et pourquoi</span>
+          </div>
+          <div class="obj-item">
+            <span class="obj-num">O4</span>
+            <span>Produire un <strong>plan de marche exploitable</strong> par la Planification</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="block-title" style="margin-top:2rem">📦 Familles de produits traitées</h3>
+    <div class="family-grid">
+      <div class="family-card fam-crc">
+        <div class="fam-icon">🔩</div>
+        <div class="fam-name">CRC</div>
+        <div class="fam-desc">Bobines laminées à froid</div>
+        <div class="fam-path">PK → CRMB → BAF → SKP</div>
+      </div>
+      <div class="family-card fam-hdg">
+        <div class="fam-icon">⚡</div>
+        <div class="fam-name">HDG</div>
+        <div class="fam-desc">Galvanisées à chaud</div>
+        <div class="fam-path">PK → CRM → LGA/LGB</div>
+      </div>
+      <div class="family-card fam-ppgi">
+        <div class="fam-icon">🎨</div>
+        <div class="fam-name">PPGI</div>
+        <div class="fam-desc">Pré-laquées</div>
+        <div class="fam-path">PK → CRM → LGA</div>
+      </div>
+      <div class="family-card fam-bacr">
+        <div class="fam-icon">🔥</div>
+        <div class="fam-name">BACR</div>
+        <div class="fam-desc">Recuit base continu</div>
+        <div class="fam-path">Voie A ou Voie B</div>
+      </div>
+      <div class="family-card fam-hrc">
+        <div class="fam-icon">📦</div>
+        <div class="fam-name">HRC DEC</div>
+        <div class="fam-desc">HRC décapée (marginal)</div>
+        <div class="fam-path">PK uniquement</div>
+      </div>
+    </div>
+
+    <div class="structure-box">
+      <h3 class="block-title">📁 Structure du projet</h3>
+      <div class="file-tree">
+        <div class="tree-item tree-root">📁 optimisation/</div>
+        <div class="tree-item tree-l1">📁 data/ <span class="tree-comment">— Fichier Excel source</span></div>
+        <div class="tree-item tree-l2 tree-file">📊 Donnees_MaghrebSteel.xlsx</div>
+        <div class="tree-item tree-l1">📁 src/ <span class="tree-comment">— Modules Python</span></div>
+        <div class="tree-item tree-l2 tree-file highlight-file">🐍 data_loader.py <span class="tree-badge">Données</span></div>
+        <div class="tree-item tree-l2 tree-file highlight-file">🐍 model.py <span class="tree-badge">Optimisation</span></div>
+        <div class="tree-item tree-l1">📁 outputs/ <span class="tree-comment">— Résultats exportés automatiquement</span></div>
+        <div class="tree-item tree-l2 tree-file">📈 resultats_complets.xlsx</div>
+        <div class="tree-item tree-l2 tree-file">📄 plan_marche.csv</div>
+        <div class="tree-item tree-l2 tree-file">📄 shadow_prices.csv</div>
+        <div class="tree-item tree-l1">📁 tests/ <span class="tree-comment">— Validation</span></div>
+        <div class="tree-item tree-l1 tree-file highlight-file">🌐 app.py <span class="tree-badge">Interface Web</span></div>
+        <div class="tree-item tree-l1 tree-file">🐍 main.py <span class="tree-comment">— CLI</span></div>
+        <div class="tree-item tree-l1 tree-file">📄 requirements.txt</div>
+        <div class="tree-item tree-l1 tree-file">📖 README.md</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 2 : APPLICATION ──────────────────────────────────── -->
+  <section class="doc-section" id="application">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <div>
+        <h2 class="section-title">L'Application Web</h2>
+        <p class="section-subtitle">Guide d'utilisation complet de l'interface Streamlit</p>
+      </div>
+    </div>
+
+    <div class="callout callout-success">
+      <span class="callout-icon">🚀</span>
+      <div>
+        <strong>Lancer l'app :</strong>
+        <code class="inline-code">python -m streamlit run app.py</code>
+        → puis ouvrir <strong>http://localhost:8501</strong>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="ui-block" id="sidebar-doc">
+      <div class="ui-label">📌 Barre latérale (Sidebar)</div>
+      <div class="ui-content">
+        <div class="ui-screenshot-placeholder">
+          <div class="placeholder-inner">
+            <div class="placeholder-sidebar">
+              <div class="ps-title">🏭 Maghreb Steel</div>
+              <div class="ps-section">⚙️ Configuration</div>
+              <div class="ps-input">data/Donnees_MaghrebSteel.xlsx</div>
+              <div class="ps-section">🎭 Scénario</div>
+              <div class="ps-select">Base ▼</div>
+              <div class="ps-btn">🚀 Lancer l'optimisation</div>
+            </div>
+          </div>
+        </div>
+        <div class="ui-desc">
+          <h4>Ce qu'elle contient :</h4>
+          <ul class="desc-list">
+            <li><strong>Fichier de données</strong> — chemin vers le fichier Excel source. Par défaut : <code>data/Donnees_MaghrebSteel.xlsx</code></li>
+            <li><strong>Scénario</strong> — sélectionner un des 4 scénarios (Base, HRC +10%, Panne LGB, Commande urgente)</li>
+            <li><strong>Bouton "Lancer l'optimisation"</strong> — déclenche la résolution du modèle LP (environ 5-10 secondes)</li>
+          </ul>
+          <div class="callout callout-tip" style="margin-top:1rem">
+            <span class="callout-icon">💡</span>
+            <div>L'optimisation se lance <strong>automatiquement</strong> au premier chargement de la page. Pas besoin de cliquer le bouton la première fois.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="ui-block" id="kpi-doc">
+      <div class="ui-label">📊 Cartes KPI (en haut de page)</div>
+      <div class="ui-content">
+        <div class="kpi-demo">
+          <div class="kpi-demo-card">
+            <div class="kd-val">42.9M</div>
+            <div class="kd-lbl">Marge Totale (MAD)</div>
+          </div>
+          <div class="kpi-demo-card">
+            <div class="kd-val" style="color:#34d399">88%</div>
+            <div class="kd-lbl">Taux de Service</div>
+          </div>
+          <div class="kpi-demo-card">
+            <div class="kd-val">14 929</div>
+            <div class="kd-lbl">Tonnage Livré (T)</div>
+          </div>
+          <div class="kpi-demo-card">
+            <div class="kd-val" style="color:#f59e0b">8</div>
+            <div class="kd-lbl">Cdes Refusées</div>
+          </div>
+          <div class="kpi-demo-card">
+            <div class="kd-val">2 874</div>
+            <div class="kd-lbl">Marge/Tonne (MAD/T)</div>
+          </div>
+        </div>
+        <table class="doc-table" style="margin-top:1.5rem">
+          <thead>
+            <tr><th>KPI</th><th>Définition</th><th>Couleur</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Marge totale</strong></td><td>Σ (Prix_vente − Coûts) × Tonnage livré</td><td>Bleu/vert gradient</td></tr>
+            <tr><td><strong>Taux de service</strong></td><td>Tonnage_livré / Tonnage_demandé × 100%</td><td>🟢 ≥85% · 🟡 ≥70% · 🔴 &lt;70%</td></tr>
+            <tr><td><strong>Tonnage livré</strong></td><td>Total des tonnes effectivement produites</td><td>Bleu</td></tr>
+            <tr><td><strong>Cdes refusées</strong></td><td>Commandes avec taux service &lt; 5%</td><td>🔴 &gt;10 · 🟡 &gt;5 · 🟢 ≤5</td></tr>
+            <tr><td><strong>Marge/Tonne</strong></td><td>Marge totale / Tonnage livré</td><td>Gradient</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 1 : Plan de Marche -->
+    <div class="tab-section" id="tab-plan">
+      <div class="tab-header">
+        <span class="tab-icon">📊</span>
+        <div>
+          <h3 class="tab-title">Onglet 1 — Plan de Marche</h3>
+          <p class="tab-subtitle">Le livrable principal pour le département Planification</p>
+        </div>
+      </div>
+      <div class="tab-content">
+        <div class="graph-card">
+          <div class="graph-header">
+            <h4>🔥 Heatmap — Tonnage par ligne × semaine</h4>
+            <span class="graph-type">Plotly Heatmap</span>
+          </div>
+          <div class="heatmap-demo">
+            <div class="hm-header">
+              <div class="hm-corner"></div>
+              <div class="hm-col">S1</div><div class="hm-col">S2</div><div class="hm-col">S3</div><div class="hm-col">S4</div>
+            </div>
+            <div class="hm-row">
+              <div class="hm-row-label">PK</div>
+              <div class="hm-cell" style="--intensity:0.55">7 655</div>
+              <div class="hm-cell" style="--intensity:0.39">5 488</div>
+              <div class="hm-cell" style="--intensity:0.41">5 754</div>
+              <div class="hm-cell" style="--intensity:0.21">3 066</div>
+            </div>
+            <div class="hm-row">
+              <div class="hm-row-label">CRMB</div>
+              <div class="hm-cell" style="--intensity:0.99">6 237</div>
+              <div class="hm-cell" style="--intensity:0.82">4 332</div>
+              <div class="hm-cell" style="--intensity:0.55">2 907</div>
+              <div class="hm-cell" style="--intensity:0.37">1 939</div>
+            </div>
+            <div class="hm-row">
+              <div class="hm-row-label">LGA</div>
+              <div class="hm-cell" style="--intensity:1.0">1 750</div>
+              <div class="hm-cell" style="--intensity:0.68">1 197</div>
+              <div class="hm-cell" style="--intensity:0.28">497</div>
+              <div class="hm-cell" style="--intensity:0.13">229</div>
+            </div>
+            <div class="hm-row">
+              <div class="hm-row-label">LGB</div>
+              <div class="hm-cell" style="--intensity:0.77">2 093</div>
+              <div class="hm-cell" style="--intensity:0.55">1 493</div>
+              <div class="hm-cell" style="--intensity:0.36">986</div>
+              <div class="hm-cell" style="--intensity:0.18">503</div>
+            </div>
+          </div>
+          <div class="graph-legend">
+            <span class="legend-item"><span class="legend-color" style="background:rgba(59,130,246,0.1)"></span> Faible charge</span>
+            <span class="legend-item"><span class="legend-color" style="background:rgba(59,130,246,0.6)"></span> Charge moyenne</span>
+            <span class="legend-item"><span class="legend-color" style="background:#3b82f6"></span> Goulot</span>
+          </div>
+          <p class="graph-desc">
+            <strong>Comment lire ce graphe :</strong> Chaque cellule = tonnage total (en T) transitant par une ligne à une semaine donnée. Plus la cellule est foncée, plus la ligne est chargée. Les cellules très foncées indiquent les <strong>goulots d'étranglement</strong>.
+          </p>
+        </div>
+
+        <div class="graph-card">
+          <div class="graph-header">
+            <h4>📊 Barres empilées — Tonnage par famille × semaine × ligne</h4>
+            <span class="graph-type">Plotly Bar Chart</span>
+          </div>
+          <div class="bar-demo">
+            <div class="bar-group">
+              <div class="bar-label">S1</div>
+              <div class="bar-stack">
+                <div class="bar-seg" style="height:60%; background:#3b82f6" title="CRC"></div>
+                <div class="bar-seg" style="height:25%; background:#10b981" title="HDG"></div>
+                <div class="bar-seg" style="height:10%; background:#f59e0b" title="PPGI"></div>
+                <div class="bar-seg" style="height:5%; background:#8b5cf6" title="BACR"></div>
+              </div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label">S2</div>
+              <div class="bar-stack">
+                <div class="bar-seg" style="height:45%; background:#3b82f6"></div>
+                <div class="bar-seg" style="height:30%; background:#10b981"></div>
+                <div class="bar-seg" style="height:15%; background:#f59e0b"></div>
+                <div class="bar-seg" style="height:10%; background:#8b5cf6"></div>
+              </div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label">S3</div>
+              <div class="bar-stack">
+                <div class="bar-seg" style="height:50%; background:#3b82f6"></div>
+                <div class="bar-seg" style="height:20%; background:#10b981"></div>
+                <div class="bar-seg" style="height:20%; background:#f59e0b"></div>
+                <div class="bar-seg" style="height:10%; background:#8b5cf6"></div>
+              </div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label">S4</div>
+              <div class="bar-stack">
+                <div class="bar-seg" style="height:30%; background:#3b82f6"></div>
+                <div class="bar-seg" style="height:35%; background:#10b981"></div>
+                <div class="bar-seg" style="height:25%; background:#f59e0b"></div>
+                <div class="bar-seg" style="height:10%; background:#8b5cf6"></div>
+              </div>
+            </div>
+          </div>
+          <div class="bar-legend">
+            <span><span style="background:#3b82f6" class="legend-dot"></span>CRC</span>
+            <span><span style="background:#10b981" class="legend-dot"></span>HDG</span>
+            <span><span style="background:#f59e0b" class="legend-dot"></span>PPGI</span>
+            <span><span style="background:#8b5cf6" class="legend-dot"></span>BACR</span>
+          </div>
+          <p class="graph-desc">
+            <strong>Comment lire :</strong> Chaque barre = production totale d'une semaine, décomposée par famille. Permet de voir l'évolution du mix produit semaine par semaine. Un zoom par ligne est disponible (paramètre <code>facet_col</code>).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2 : Utilisation Lignes -->
+    <div class="tab-section" id="tab-lignes">
+      <div class="tab-header">
+        <span class="tab-icon">🔩</span>
+        <div>
+          <h3 class="tab-title">Onglet 2 — Utilisation des Lignes</h3>
+          <p class="tab-subtitle">Identifier les goulots d'étranglement (question E16)</p>
+        </div>
+      </div>
+      <div class="tab-content">
+        <div class="graph-card">
+          <div class="graph-header">
+            <h4>📊 Barres groupées — Taux d'utilisation par ligne et semaine</h4>
+            <span class="graph-type">Plotly Grouped Bar</span>
+          </div>
+          <div class="util-demo">
+            <div class="util-bars">
+              <div class="util-bar-group">
+                <div class="util-bar-label">PK</div>
+                <div class="util-bars-inner">
+                  <div class="util-seg" style="width:55.3%" title="S1: 55.3%">S1</div>
+                  <div class="util-seg" style="width:39.5%; background:#10b981" title="S2">S2</div>
+                  <div class="util-seg" style="width:41.6%; background:#f59e0b" title="S3">S3</div>
+                  <div class="util-seg" style="width:21.9%; background:#ef4444" title="S4">S4</div>
+                </div>
+              </div>
+              <div class="util-bar-group">
+                <div class="util-bar-label">CRMB</div>
+                <div class="util-bars-inner">
+                  <div class="util-seg goulot" style="width:99.6%">S1 🔴</div>
+                  <div class="util-seg" style="width:82.9%; background:#10b981">S2</div>
+                  <div class="util-seg" style="width:55.5%; background:#f59e0b">S3</div>
+                  <div class="util-seg" style="width:37%; background:#ef4444">S4</div>
+                </div>
+              </div>
+              <div class="util-bar-group">
+                <div class="util-bar-label">LGA</div>
+                <div class="util-bars-inner">
+                  <div class="util-seg goulot" style="width:100%">S1 🔴</div>
+                  <div class="util-seg" style="width:68.4%; background:#10b981">S2</div>
+                  <div class="util-seg" style="width:28.4%; background:#f59e0b">S3</div>
+                  <div class="util-seg" style="width:13.1%; background:#ef4444">S4</div>
+                </div>
+              </div>
+            </div>
+            <div class="util-threshold">
+              <div class="thresh-line" style="left:90%"><span>90% critique</span></div>
+              <div class="thresh-line thresh-warn" style="left:75%"><span>75% tension</span></div>
+            </div>
+          </div>
+          <p class="graph-desc">
+            <strong>Lignes rouges horizontales :</strong> seuil critique (90%) et seuil de tension (75%). Toute barre dépassant 90% identifie un <strong>goulot</strong> qui bloque des commandes.
+          </p>
+        </div>
+
+        <div class="alert-grid">
+          <div class="alert-box alert-red">
+            <div class="ab-title">🔴 Goulots identifiés</div>
+            <ul>
+              <li><strong>CRMB</strong> — 99.6% en Semaine 1</li>
+              <li><strong>LGA</strong> — 100% en Semaine 1</li>
+              <li><strong>BAF</strong> — 100% en Semaine 3</li>
+            </ul>
+            <p class="ab-action">→ Ces lignes bloquent des commandes. Investissement prioritaire.</p>
+          </div>
+          <div class="alert-box alert-yellow">
+            <div class="ab-title">🟡 En tension</div>
+            <ul>
+              <li><strong>CRMB</strong> — 82.9% en Semaine 2</li>
+              <li><strong>LGB</strong> — 77.4% en Semaine 1</li>
+              <li><strong>BAF</strong> — 84% en Semaine 4</li>
+            </ul>
+            <p class="ab-action">→ Surveiller. Risque si nouvelles commandes.</p>
+          </div>
+          <div class="alert-box alert-green">
+            <div class="ab-title">🟢 Sous-utilisées</div>
+            <ul>
+              <li><strong>CRMA</strong> — 0% toutes semaines</li>
+              <li><strong>SKP</strong> — max 60%</li>
+              <li><strong>PK</strong> — max 55%</li>
+            </ul>
+            <p class="ab-action">→ Capacité disponible. Peut absorber plus.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3 : Commandes -->
+    <div class="tab-section" id="tab-commandes">
+      <div class="tab-header">
+        <span class="tab-icon">📦</span>
+        <div>
+          <h3 class="tab-title">Onglet 3 — Commandes</h3>
+          <p class="tab-subtitle">Carnet de commandes avec taux de service (questions E13, E17)</p>
+        </div>
+      </div>
+      <div class="tab-content">
+        <div class="feature-list">
+          <div class="feature-item">
+            <span class="feature-icon">🔍</span>
+            <div>
+              <h4>Filtres interactifs</h4>
+              <p>Filtrer par <strong>famille</strong> (CRC, HDG, PPGI, BACR), par <strong>priorité</strong> (Haute, Normale, Basse) et par <strong>statut</strong> (honorées, partielles, refusées).</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📊</span>
+            <div>
+              <h4>Tableau avec barre de progression</h4>
+              <p>La colonne <strong>Taux service</strong> s'affiche en barre de progression colorée : vert (≥95%), orange (5–95%), rouge (&lt;5%).</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🥧</span>
+            <div>
+              <h4>Camembert — Tonnage livré par famille</h4>
+              <p>Vue rapide du mix de production : quelle famille représente le plus de tonnage livré.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📊</span>
+            <div>
+              <h4>Barres empilées — Tonnage par priorité</h4>
+              <p>Visualise si le modèle respecte bien la priorisation des commandes Haute &gt; Normale &gt; Basse.</p>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="margin:1.5rem 0 0.75rem; color:var(--text-primary)">Colonnes du tableau expliquées</h4>
+        <table class="doc-table">
+          <thead>
+            <tr><th>Colonne</th><th>Description</th><th>Type</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>Identifiant commande (CMD-001 à CMD-066)</td><td>Texte</td></tr>
+            <tr><td><code>famille</code></td><td>Famille de produit (CRC, HDG, PPGI, BACR)</td><td>Catégorie</td></tr>
+            <tr><td><code>grade</code></td><td>Grade d'acier (DC01, DD13, DX51, DX52, S320)</td><td>Catégorie</td></tr>
+            <tr><td><code>epaisseur</code></td><td>Épaisseur en mm — détermine le coût de transformation</td><td>Float</td></tr>
+            <tr><td><code>tonnage_demande</code></td><td>Tonnage demandé par le client</td><td>Float (T)</td></tr>
+            <tr><td><code>tonnage_livre</code></td><td>Tonnage que le modèle décide de produire</td><td>Float (T)</td></tr>
+            <tr><td><code>taux_service</code></td><td>tonnage_livre / tonnage_demande × 100%</td><td>% (0–100)</td></tr>
+            <tr><td><code>chemin_choisi</code></td><td>Chemin de production optimal sélectionné par le solveur</td><td>Texte</td></tr>
+            <tr><td><code>marge_unitaire</code></td><td>Marge nette par tonne livrée (MAD/T)</td><td>Float</td></tr>
+            <tr><td><code>marge_totale_cmd</code></td><td>Marge totale générée par cette commande</td><td>Float (MAD)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4 : Analyse Économique -->
+    <div class="tab-section" id="tab-eco">
+      <div class="tab-header">
+        <span class="tab-icon">📈</span>
+        <div>
+          <h3 class="tab-title">Onglet 4 — Analyse Économique</h3>
+          <p class="tab-subtitle">Marge par famille et recommandations (questions E19, E23)</p>
+        </div>
+      </div>
+      <div class="tab-content">
+        <div class="graph-card">
+          <div class="graph-header">
+            <h4>💰 Barres — Marge totale par famille (MMAD)</h4>
+            <span class="graph-type">Plotly Bar</span>
+          </div>
+          <p class="graph-desc">
+            Compare la contribution de chaque famille à la marge globale. Permet d'identifier les familles les plus rentables et celles à prioriser. L'axe Y est en <strong>millions de MAD (MMAD)</strong>.
+          </p>
+        </div>
+        <div class="graph-card">
+          <div class="graph-header">
+            <h4>🔵 Nuage de points — Marge unitaire vs Tonnage livré</h4>
+            <span class="graph-type">Plotly Scatter</span>
+          </div>
+          <p class="graph-desc">
+            Chaque point = une commande honorée. La taille du point ∝ tonnage. Axes : <strong>X = tonnage livré</strong>, <strong>Y = marge par tonne (MAD/T)</strong>. Les points en haut à droite = commandes les plus rentables en volume.
+            <br><br>
+            <strong>Hover :</strong> survoler un point affiche l'ID commande, le grade, l'épaisseur et la semaine.
+          </p>
+        </div>
+        <div class="rec-grid">
+          <div class="rec-card">
+            <div class="rec-num">01</div>
+            <h4>Investir dans la ligne CRMB/LGA</h4>
+            <p>Goulots à &gt;99%. Chaque tonne de capacité supplémentaire génère de la marge additionnelle identifiable via le shadow price.</p>
+          </div>
+          <div class="rec-card">
+            <div class="rec-num">02</div>
+            <h4>Prioriser PPGI/HDG (marge/T élevée)</h4>
+            <p>Ces familles génèrent les meilleures marges unitaires. Le commercial devrait orienter les clients vers ces produits.</p>
+          </div>
+          <div class="rec-card">
+            <div class="rec-num">03</div>
+            <h4>Négocier le prix HRC DC01</h4>
+            <p>Grade le plus consommé. Un gain de 5% sur son prix améliore la marge globale de ~150–200 MAD/T livré.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5 : Shadow Prices -->
+    <div class="tab-section" id="tab-shadow">
+      <div class="tab-header">
+        <span class="tab-icon">⚠️</span>
+        <div>
+          <h3 class="tab-title">Onglet 5 — Shadow Prices</h3>
+          <p class="tab-subtitle">Valeur marginale des contraintes (questions E17, E18)</p>
+        </div>
+      </div>
+      <div class="tab-content">
+        <div class="callout callout-info">
+          <span class="callout-icon">📐</span>
+          <div>
+            <strong>Shadow price (prix dual) :</strong> Si on relâche une contrainte d'une unité (1 tonne, 1 MAD…), de combien augmente la marge optimale ? C'est la <em>valeur marginale</em> de cette contrainte.
+          </div>
+        </div>
+        <div class="graph-card">
+          <div class="graph-header">
+            <h4>📊 Barres horizontales — Top Shadow Prices</h4>
+            <span class="graph-type">Plotly Horizontal Bar (RdBu scale)</span>
+          </div>
+          <p class="graph-desc">
+            Les barres bleues foncées = contraintes de demande (commandes rentables non satisfaites). Les barres rouges = contraintes de capacité saturées. Triées par valeur absolue décroissante = les contraintes les plus critiques en premier.
+          </p>
+        </div>
+        <h4 style="margin:1.5rem 0 0.75rem; color:var(--text-primary)">Interprétation des 3 principaux shadow prices</h4>
+        <table class="doc-table">
+          <thead><tr><th>Contrainte</th><th>Valeur (MAD)</th><th>Interprétation business</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>dem_CMD_042</code></td>
+              <td>+4 740</td>
+              <td>Si on permet de livrer 1 tonne de plus de CMD-042, la marge augmente de 4 740 MAD. Cette commande est très rentable et bloquée par capacité.</td>
+            </tr>
+            <tr>
+              <td><code>dem_CMD_028</code></td>
+              <td>+4 520</td>
+              <td>Même logique. Commande bloquée par saturation CRMB en S1.</td>
+            </tr>
+            <tr>
+              <td><code>cap_CRMB_S1</code></td>
+              <td>+3 200</td>
+              <td>1 tonne de capacité supplémentaire sur CRMB en semaine 1 rapporte 3 200 MAD. Investissement justifié si coût &lt; 3 200 MAD/T/semaine.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout callout-warn" style="margin-top:1.5rem">
+          <span class="callout-icon">⚠️</span>
+          <div>
+            <strong>Limites du modèle (E24) :</strong> Le modèle est une <strong>relaxation LP continue</strong> (variables ≥ 0, pas d'entiers). En réalité : (1) la production se fait par campagne entière, (2) l'horizon 4 semaines ne capture pas le long terme, (3) les cadences réelles sont incertaines (±5%).
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 3 : MODÈLE MATHÉMATIQUE ──────────────────────────── -->
+  <section class="doc-section" id="modele">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <div>
+        <h2 class="section-title">Modèle Mathématique</h2>
+        <p class="section-subtitle">Formulation complète du programme linéaire (questions E5–E10)</p>
+      </div>
+    </div>
+
+    <!-- Variables de décision -->
+    <div id="variables">
+      <h3 class="block-title">E5 — Variables de décision</h3>
+      <div class="math-box">
+        <div class="math-var">
+          <span class="math-sym">x<sub>i,k</sub></span>
+          <div class="math-def">
+            <span class="math-type">Continue · ≥ 0</span>
+            <p>Tonnage de la commande <em>i</em> produit via le chemin de production <em>k</em>, en tonnes.</p>
+            <ul>
+              <li><em>i</em> ∈ {CMD-001, …, CMD-066} — index des commandes</li>
+              <li><em>k</em> ∈ {CRC, HDG_A, HDG_B, HDG_C, PPGI_A, PPGI_B, BACR_A, BACR_B, BACR_C, HRC_DEC} — chemin</li>
+              <li>Domaine : 0 ≤ x<sub>i,k</sub> ≤ Tonnage_demandé<sub>i</sub></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-info">
+        <span class="callout-icon">💡</span>
+        <div>Le modèle optimise <strong>simultanément</strong> le chemin de production et le tonnage pour chaque commande. Si x<sub>i, HDG_A</sub> = 300 T, cela signifie que la commande i est produite via PK→CRMA→LGA pour 300 tonnes.</div>
+      </div>
+    </div>
+
+    <!-- Fonction objectif -->
+    <div id="objectif" style="margin-top:2rem">
+      <h3 class="block-title">E6 — Fonction objectif</h3>
+      <div class="math-formula">
+        <div class="formula-title">Maximiser :</div>
+        <div class="formula-body">
+          Z = Σ<sub>i,k</sub> <span class="f-green">[ Prix_vente<sub>i</sub></span>
+          <span class="f-red">− Prix_HRC<sub>i</sub> × (1/ρ<sub>k</sub>)</span>
+          <span class="f-orange">− Coût_transfo<sub>i,k</sub></span>
+          <span class="f-blue">+ Val_chutes<sub>i,k</sub></span>
+          <span class="f-purple">− Extras<sub>i</sub></span>
+          <span class="f-green">] × x<sub>i,k</sub></span>
+        </div>
+      </div>
+      <table class="doc-table" style="margin-top:1rem">
+        <thead><tr><th>Terme</th><th>Description</th><th>Valeur type</th></tr></thead>
+        <tbody>
+          <tr><td class="term-green">Prix_vente<sub>i</sub></td><td>Prix de vente negocié avec le client (MAD/T)</td><td>8 000 – 13 000 MAD/T</td></tr>
+          <tr><td class="term-red">Prix_HRC × (1/ρ<sub>k</sub>)</td><td>Coût matière première HRC ramené à la tonne de produit fini. 1/ρ<sub>k</sub> = tonnage HRC entrant nécessaire par tonne finie.</td><td>5 800 – 7 000 MAD/T</td></tr>
+          <tr><td class="term-orange">Coût_transfo<sub>i,k</sub></td><td>Somme des coûts de transformation de chaque process sur le chemin, ramenés à la tonne finie.</td><td>800 – 2 500 MAD/T</td></tr>
+          <tr><td class="term-blue">Val_chutes</td><td>Valorisation ferraille : (1/ρ − 1) × tonnage × 1 800 MAD/T × 50%</td><td>50 – 200 MAD/T</td></tr>
+          <tr><td class="term-purple">Extras</td><td>Zinc : 18 000 × 0.025 = 450 MAD/T (HDG/PPGI). Peinture : 12 000 × 0.01 = 120 MAD/T (PPGI).</td><td>0 – 570 MAD/T</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Contraintes -->
+    <div id="contraintes" style="margin-top:2rem">
+      <h3 class="block-title">E7–E9 — Contraintes</h3>
+
+      <div class="constraint-cards">
+        <div class="cst-card">
+          <div class="cst-header">
+            <span class="cst-ref">C1</span>
+            <span class="cst-name">Limite de livraison</span>
+            <span class="cst-src">E8</span>
+          </div>
+          <div class="cst-formula">
+            Σ<sub>k</sub> x<sub>i,k</sub> ≤ Tonnage_demandé<sub>i</sub> &nbsp; ∀i
+          </div>
+          <p class="cst-desc">On ne peut pas livrer plus que ce que le client a commandé. Cette contrainte active → taux de service = 100% pour cette commande.</p>
+        </div>
+
+        <div class="cst-card">
+          <div class="cst-header">
+            <span class="cst-ref">C2</span>
+            <span class="cst-name">Capacité nette par ligne × semaine</span>
+            <span class="cst-src">E7</span>
+          </div>
+          <div class="cst-formula">
+            Σ<sub>i,k ∋ ligne∈k</sub> (x<sub>i,k</sub> / ρ<sub>cumul</sub>) ≤ Cadence<sub>ligne</sub> × (7 − Arrêts<sub>ligne,s</sub>) &nbsp; ∀ligne, ∀s
+          </div>
+          <p class="cst-desc">Le tonnage traversant chaque ligne ne dépasse pas sa capacité nette hebdomadaire. Les arrêts planifiés réduisent le nombre de jours disponibles. Les rendements augmentent le tonnage amont nécessaire.</p>
+          <div class="cst-example">
+            <strong>Exemple CRMB S1 :</strong> Cadence = 789 T/j · 0 arrêt · 7 jours = <strong>5 523 T max</strong>
+          </div>
+        </div>
+
+        <div class="cst-card">
+          <div class="cst-header">
+            <span class="cst-ref">C3</span>
+            <span class="cst-name">Disponibilité HRC par grade</span>
+            <span class="cst-src">E9</span>
+          </div>
+          <div class="cst-formula">
+            Σ<sub>i de grade g, k</sub> (x<sub>i,k</sub> / ρ<sub>chemin k</sub>) ≤ Dispo_HRC<sub>g</sub> + Stock_PK<sub>g</sub> &nbsp; ∀g
+          </div>
+          <p class="cst-desc">La consommation totale de HRC d'un grade (sur tout l'horizon) ne dépasse pas le stock disponible. Le facteur 1/ρ tient compte des chutes sur tout le chemin.</p>
+          <div class="cst-example">
+            <strong>Exemple DC01 :</strong> Stock_PK = 800T + Dispo = 6 750T → max 7 550T consommables
+          </div>
+        </div>
+
+        <div class="cst-card">
+          <div class="cst-header">
+            <span class="cst-ref">C4</span>
+            <span class="cst-name">Stock minimum de sécurité</span>
+            <span class="cst-src">E8</span>
+          </div>
+          <div class="cst-formula">
+            Σ<sub>i de famille f, k</sub> x<sub>i,k</sub> ≥ max(0, Stock_min<sub>f</sub> − Stock_initial<sub>f</sub>)
+          </div>
+          <p class="cst-desc">Si le stock initial d'une famille est en dessous du minimum de sécurité, le modèle doit produire au moins assez pour combler le déficit.</p>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">🔍</span>
+        <div>
+          <strong>E10 — Vérification dimensionnelle :</strong> Toutes les contraintes sont homogènes en <strong>Tonnes (T)</strong>. Les coûts sont en <strong>MAD/T × T = MAD</strong>. Il n'y a pas de mélange d'unités. Les rendements ρ ∈ (0,1] sont sans dimension.
+        </div>
+      </div>
+    </div>
+
+    <!-- Flux métallurgique -->
+    <div id="chemins" style="margin-top:2rem">
+      <h3 class="block-title">E2 — Flux métallurgique & Chemins de production</h3>
+      <div class="flow-diagram">
+        <div class="flow-step flow-input">
+          <div class="flow-box">HRC<br><span class="flow-sub">(matière première)</span></div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-box flow-pk">PK<br><span class="flow-sub">ρ = 98.5%</span></div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-split">
+          <div class="flow-branch">
+            <div class="flow-box flow-crma">CRMA<br><span class="flow-sub">ρ = 96.5%</span></div>
+            <div class="flow-arrow-down">↓</div>
+            <div class="flow-box flow-lga">LGA<br><span class="flow-sub">HDG/PPGI/BACR</span></div>
+          </div>
+          <div class="flow-branch">
+            <div class="flow-box flow-crmb">CRMB<br><span class="flow-sub">ρ = 97.0%</span></div>
+            <div class="flow-split-2">
+              <div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-box flow-baf">BAF<br><span class="flow-sub">ρ = 99%</span></div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-box flow-skp">SKP → CRC</div>
+              </div>
+              <div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-box flow-lgb">LGB<br><span class="flow-sub">HDG/BACR</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <table class="doc-table" style="margin-top:1.5rem">
+        <thead><tr><th>Chemin</th><th>Famille</th><th>Process</th><th>ρ global</th><th>Règle</th></tr></thead>
+        <tbody>
+          <tr><td><code>CRC</code></td><td>CRC</td><td>PK → CRMB → BAF → SKP</td><td>≈ 94.8%</td><td>CRMA interdit pour CRC</td></tr>
+          <tr><td><code>HDG_A</code></td><td>HDG</td><td>PK → CRMA → LGA</td><td>≈ 92.9%</td><td>—</td></tr>
+          <tr><td><code>HDG_B</code></td><td>HDG</td><td>PK → CRMB → LGA</td><td>≈ 90.3%</td><td>—</td></tr>
+          <tr><td><code>HDG_C</code></td><td>HDG</td><td>PK → CRMB → LGB</td><td>≈ 88.9%</td><td>—</td></tr>
+          <tr><td><code>PPGI_A</code></td><td>PPGI</td><td>PK → CRMA → LGA</td><td>≈ 92.9%</td><td>LGA-PPGI inclut peinture</td></tr>
+          <tr><td><code>BACR_A</code></td><td>BACR</td><td>PK → CRMB → BAF → LGB</td><td>≈ 90.0%</td><td>Via BAF obligatoire</td></tr>
+          <tr><td><code>BACR_B</code></td><td>BACR</td><td>PK → CRMA → LGA</td><td>≈ 92.9%</td><td>Directe</td></tr>
+          <tr><td><code>HRC_DEC</code></td><td>HRC DEC</td><td>PK</td><td>98.5%</td><td>PK uniquement</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 4 : CODE ──────────────────────────────────────────── -->
+  <section class="doc-section" id="code">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <div>
+        <h2 class="section-title">Architecture du Code</h2>
+        <p class="section-subtitle">Explication détaillée de chaque module Python</p>
+      </div>
+    </div>
+
+    <!-- data_loader.py -->
+    <div class="code-module" id="data-loader">
+      <div class="module-header">
+        <span class="module-icon">🐍</span>
+        <div>
+          <h3 class="module-title">src/data_loader.py</h3>
+          <p class="module-desc">Chargement et structuration de toutes les données Excel</p>
+        </div>
+        <span class="module-badge">Données</span>
+      </div>
+
+      <h4 class="fn-title">Fonction principale : <code>load_data(filepath)</code></h4>
+      <div class="code-block">
+        <pre><code><span class="kw">def</span> <span class="fn">load_data</span>(filepath: str) -> dict:
+    <span class="str">"""
+    Lit le fichier Excel et retourne un dictionnaire structuré.
+    Onglets lus : Commandes, Cadences, Rendements,
+                  Couts_Variables, Prix_HRC, Stocks_Initiaux,
+                  Arrets_Planifies, Parametres
+    """</span>
+    wb = pd.ExcelFile(filepath)
+
+    <span class="cm"># Commandes : 65 lignes, 10 colonnes</span>
+    data[<span class="str">"commandes"</span>] = pd.read_excel(fp, sheet_name=<span class="str">"Commandes"</span>, header=<span class="num">2</span>)
+
+    <span class="cm"># Cadences (T/jour) : matrice 7 lignes × 5 familles</span>
+    data[<span class="str">"cadences"</span>] = ...  <span class="cm"># index=Ligne, colonnes=familles</span>
+
+    <span class="cm"># Rendements : dict {process → float 0-1}</span>
+    data[<span class="str">"rendements"</span>] = {<span class="str">"PK"</span>: <span class="num">0.985</span>, <span class="str">"CRMA"</span>: <span class="num">0.965</span>, ...}
+
+    <span class="kw">return</span> data</code></pre>
+      </div>
+
+      <h4 class="fn-title">Fonctions utilitaires</h4>
+      <div class="fn-list">
+        <div class="fn-item">
+          <code>get_cout_transformation(epaisseur, process, couts_df)</code>
+          <p>Retourne le coût (MAD/T) selon la tranche d'épaisseur. 7 tranches : &lt;0.3, 0.3-0.4, 0.4-0.5, 0.5-0.7, 0.7-1.0, 1.0-1.5, &gt;1.5 mm.</p>
+        </div>
+        <div class="fn-item">
+          <code>get_prix_hrc(grade, largeur, prix_hrc_df)</code>
+          <p>Prix HRC par interpolation sur la largeur la plus proche disponible (1020, 1090, 1100, 1140, 1250, 1280, 1320 mm).</p>
+        </div>
+        <div class="fn-item">
+          <code>get_capacite_nette(ligne, semaine, famille, cadences, arrets)</code>
+          <p>Calcule : <code>Cadence[ligne, famille] × (7 − Arrêts[ligne, semaine])</code> en T/semaine.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- model.py -->
+    <div class="code-module" id="model-py" style="margin-top:2rem">
+      <div class="module-header">
+        <span class="module-icon">🧮</span>
+        <div>
+          <h3 class="module-title">src/model.py</h3>
+          <p class="module-desc">Cœur du projet — Construction et résolution du modèle LP avec PuLP</p>
+        </div>
+        <span class="module-badge module-badge-green">Optimisation</span>
+      </div>
+
+      <h4 class="fn-title">Workflow de <code>build_and_solve()</code> — 6 étapes</h4>
+
+      <div class="workflow-steps">
+        <div class="wf-step">
+          <div class="wf-num">1</div>
+          <div class="wf-content">
+            <h5>Chargement des données</h5>
+            <p>Appel à <code>load_data()</code>. Application des scénarios (HRC ×1.1, arrêts supplémentaires, commandes extra).</p>
+          </div>
+        </div>
+        <div class="wf-step">
+          <div class="wf-num">2</div>
+          <div class="wf-content">
+            <h5>Pré-calcul par commande × chemin</h5>
+            <p>Pour chaque (commande <em>i</em>, chemin <em>k</em>) : rendement global ρ_k, coût de transformation cumulé, prix HRC, marge nette par tonne.</p>
+            <div class="code-block" style="margin-top:0.5rem">
+              <pre><code><span class="cm"># Rendement cumulé du chemin k</span>
+rend_cum = <span class="num">1.0</span>
+<span class="kw">for</span> proc, _ <span class="kw">in</span> CHEMINS[ck]:
+    rend_cum *= rendements[proc]
+
+<span class="cm"># HRC nécessaire par tonne de produit fini</span>
+hrc_par_t = <span class="num">1.0</span> / rend_cum
+
+<span class="cm"># Marge nette</span>
+marge = prix_vente - p_hrc * hrc_par_t - cout_transfo - extras</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="wf-step">
+          <div class="wf-num">3</div>
+          <div class="wf-content">
+            <h5>Construction des variables LP</h5>
+            <div class="code-block" style="margin-top:0.5rem">
+              <pre><code>prob = LpProblem(<span class="str">"MaghrebSteel"</span>, LpMaximize)
+
+<span class="cm"># x[i][ck] : tonnes produites de la commande i via chemin ck</span>
+x[i][ck] = LpVariable(
+    f<span class="str">"x_{i}_{ck}"</span>,
+    lowBound=<span class="num">0</span>,
+    upBound=tonnage_demande[i]  <span class="cm"># C1</span>
+)</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="wf-step">
+          <div class="wf-num">4</div>
+          <div class="wf-content">
+            <h5>Ajout des contraintes</h5>
+            <div class="code-block" style="margin-top:0.5rem">
+              <pre><code><span class="cm"># C2 : Capacité ligne × semaine</span>
+prob += (lpSum(coeff * x[i][ck] <span class="kw">for</span> ...) <= cap_max,
+         f<span class="str">"cap_{ligne}_S{sem}"</span>)
+
+<span class="cm"># C3 : Dispo HRC par grade</span>
+prob += (lpSum(hrc_par_t * x[i][ck] <span class="kw">for</span> ...) <= dispo_totale,
+         f<span class="str">"hrc_{grade}"</span>)
+
+<span class="cm"># C4 : Stock min sécurité</span>
+prob += (lpSum(x[i][ck] <span class="kw">for</span> ...) >= besoin_min,
+         f<span class="str">"stock_min_{fam}"</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="wf-step">
+          <div class="wf-num">5</div>
+          <div class="wf-content">
+            <h5>Résolution avec CBC</h5>
+            <div class="code-block" style="margin-top:0.5rem">
+              <pre><code>solver = PULP_CBC_CMD(msg=<span class="num">0</span>, timeLimit=<span class="num">300</span>)
+prob.solve(solver)
+<span class="cm"># Statut : Optimal, Infeasible, Unbounded...</span>
+status = LpStatus[prob.status]</code></pre>
+            </div>
+            <p>Le solveur <strong>CBC</strong> (COIN-OR Branch & Cut) est le solveur open-source livré avec PuLP. Temps de résolution : <strong>&lt; 10 secondes</strong> pour ce modèle.</p>
+          </div>
+        </div>
+        <div class="wf-step">
+          <div class="wf-num">6</div>
+          <div class="wf-content">
+            <h5>Extraction des résultats</h5>
+            <div class="code-block" style="margin-top:0.5rem">
+              <pre><code><span class="cm"># Valeur de chaque variable</span>
+vol_livre = value(x[i][ck])  <span class="cm"># ou 0 si non résolu</span>
+
+<span class="cm"># Shadow prices (prix duaux)</span>
+<span class="kw">for</span> name, cst <span class="kw">in</span> prob.constraints.items():
+    sp = cst.pi  <span class="cm"># prix dual</span>
+
+<span class="cm"># Marge totale</span>
+marge = value(prob.objective)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4 class="fn-title" style="margin-top:1.5rem">Paramètres de <code>build_and_solve()</code></h4>
+      <table class="doc-table">
+        <thead><tr><th>Paramètre</th><th>Type</th><th>Description</th><th>Scénario</th></tr></thead>
+        <tbody>
+          <tr><td><code>data_path</code></td><td>str</td><td>Chemin vers le fichier Excel</td><td>Tous</td></tr>
+          <tr><td><code>hrc_multiplier</code></td><td>float</td><td>Multiplicateur prix HRC (1.0 = base, 1.10 = +10%)</td><td>E20</td></tr>
+          <tr><td><code>extra_arrets</code></td><td>dict</td><td><code>{"LGB": {2: 2}}</code> = 2 jours supplémentaires LGB semaine 2</td><td>E21</td></tr>
+          <tr><td><code>extra_commandes</code></td><td>list</td><td>Liste de dicts de commandes supplémentaires à ajouter</td><td>E22</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- app.py -->
+    <div class="code-module" id="app-py" style="margin-top:2rem">
+      <div class="module-header">
+        <span class="module-icon">🌐</span>
+        <div>
+          <h3 class="module-title">app.py</h3>
+          <p class="module-desc">Interface web Streamlit — 750 lignes de code</p>
+        </div>
+        <span class="module-badge module-badge-purple">Interface</span>
+      </div>
+      <div class="arch-grid">
+        <div class="arch-block">
+          <h5>Configuration page</h5>
+          <p><code>st.set_page_config()</code> — titre, icône, layout wide</p>
+        </div>
+        <div class="arch-block">
+          <h5>CSS personnalisé</h5>
+          <p>Dark theme, glassmorphism, gradients, animations hover — injecté via <code>st.markdown(unsafe_allow_html=True)</code></p>
+        </div>
+        <div class="arch-block">
+          <h5>Session State</h5>
+          <p><code>st.session_state.resultats</code> — stocke les résultats entre les re-renders Streamlit</p>
+        </div>
+        <div class="arch-block">
+          <h5>Graphiques</h5>
+          <p>Tous les graphes utilisent <strong>Plotly</strong> (<code>plotly.express</code> + <code>plotly.graph_objects</code>) pour l'interactivité</p>
+        </div>
+        <div class="arch-block">
+          <h5>Téléchargement</h5>
+          <p><code>st.download_button()</code> — exporte le plan de marche et les résultats en CSV/Excel</p>
+        </div>
+        <div class="arch-block">
+          <h5>Filtres dynamiques</h5>
+          <p><code>st.multiselect()</code> et <code>st.selectbox()</code> pour filtrer les commandes en temps réel</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- main.py -->
+    <div class="code-module" id="main-py" style="margin-top:2rem">
+      <div class="module-header">
+        <span class="module-icon">⌨️</span>
+        <div>
+          <h3 class="module-title">main.py</h3>
+          <p class="module-desc">Script ligne de commande (CLI) pour lancer l'optimisation sans interface</p>
+        </div>
+        <span class="module-badge">CLI</span>
+      </div>
+      <div class="code-block">
+        <pre><code><span class="cm"># Lancer le scénario de base</span>
+python main.py
+
+<span class="cm"># Scénario HRC +10% (question E20)</span>
+python main.py --scenario hrc_cher
+
+<span class="cm"># Panne LGB semaine 2 (question E21)</span>
+python main.py --scenario panne_lgb
+
+<span class="cm"># Commande urgente (question E22)</span>
+python main.py --scenario commande_urgente
+
+<span class="cm"># Répertoire de sortie personnalisé</span>
+python main.py --output mes_resultats/</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 5 : SCÉNARIOS ─────────────────────────────────────── -->
+  <section class="doc-section" id="scenarios">
+    <div class="section-header">
+      <span class="section-number">05</span>
+      <div>
+        <h2 class="section-title">Scénarios d'Analyse</h2>
+        <p class="section-subtitle">Analyse de sensibilité et questions what-if (E20–E22)</p>
+      </div>
+    </div>
+
+    <div class="scenario-cards">
+      <div class="sc-card sc-base">
+        <div class="sc-header">
+          <span class="sc-icon">🏗️</span>
+          <span class="sc-label">Base</span>
+        </div>
+        <h4>Cas de référence</h4>
+        <p>Données initiales sans modification. Sert de référence pour comparer tous les autres scénarios.</p>
+        <div class="sc-results">
+          <div class="sc-kpi"><span>42.9M MAD</span> marge</div>
+          <div class="sc-kpi"><span>88%</span> taux service</div>
+        </div>
+        <code>python main.py</code>
+      </div>
+
+      <div class="sc-card sc-hrc">
+        <div class="sc-header">
+          <span class="sc-icon">📈</span>
+          <span class="sc-label">E20 — HRC +10%</span>
+        </div>
+        <h4>Hausse des matières premières</h4>
+        <p>Prix de tous les grades HRC majorés de 10%. Teste l'impact d'une hausse mondiale des cours de l'acier.</p>
+        <p><strong>Méthode :</strong> d'abord estimer avec les shadow prices, puis relancer le modèle pour vérifier.</p>
+        <code>--scenario hrc_cher</code>
+      </div>
+
+      <div class="sc-card sc-panne">
+        <div class="sc-header">
+          <span class="sc-icon">🔧</span>
+          <span class="sc-label">E21 — Panne LGB</span>
+        </div>
+        <h4>Panne machine LGB Semaine 2</h4>
+        <p>La ligne LGB tombe en panne 2 jours supplémentaires en semaine 2. Quelles commandes HDG/BACR sont impactées ?</p>
+        <p><strong>Résultat attendu :</strong> bascule des commandes LGB vers LGA (si capacité disponible).</p>
+        <code>--scenario panne_lgb</code>
+      </div>
+
+      <div class="sc-card sc-urgente">
+        <div class="sc-header">
+          <span class="sc-icon">🚨</span>
+          <span class="sc-label">E22 — Commande urgente</span>
+        </div>
+        <h4>Nouvelle commande HDG 300T S1</h4>
+        <p>Client demande 300T HDG DC01 0.5mm 1140mm S1 à 11 500 MAD/T. Le modèle peut-il accepter ? Quel coût d'opportunité ?</p>
+        <p><strong>Paramètres :</strong> cette commande "vole" de la capacité CRMB/LGA déjà saturée à S1.</p>
+        <code>--scenario commande_urgente</code>
+      </div>
+    </div>
+
+    <div class="callout callout-tip" style="margin-top:1.5rem">
+      <span class="callout-icon">💡</span>
+      <div>
+        <strong>Dans l'application web</strong> : sélectionner le scénario dans la liste déroulante de la sidebar et cliquer "Lancer l'optimisation". Les KPI et graphes se mettront à jour automatiquement. Comparer visuellement les résultats entre scénarios.
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 6 : RÉSULTATS ─────────────────────────────────────── -->
+  <section class="doc-section" id="resultats">
+    <div class="section-header">
+      <span class="section-number">06</span>
+      <div>
+        <h2 class="section-title">Résultats & Analyse</h2>
+        <p class="section-subtitle">Interprétation complète des résultats du scénario de base</p>
+      </div>
+    </div>
+
+    <div class="results-summary">
+      <table class="doc-table">
+        <thead><tr><th>Indicateur</th><th>Valeur</th><th>Interprétation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Statut</strong></td><td>✅ Optimal</td><td>Le solveur a trouvé la solution optimale (pas d'infeasibilité)</td></tr>
+          <tr><td><strong>Marge totale</strong></td><td>42 893 888 MAD</td><td>≈ 42.9 millions de MAD sur 4 semaines</td></tr>
+          <tr><td><strong>Taux de service global</strong></td><td>88.0%</td><td>14 929 T livrées sur 16 958 T demandées</td></tr>
+          <tr><td><strong>Tonnage non livré</strong></td><td>2 029 T</td><td>Bloqué principalement par saturation CRMB + LGA en S1</td></tr>
+          <tr><td><strong>Commandes refusées</strong></td><td>8 / 65</td><td>12.3% des commandes, généralement de priorité Basse</td></tr>
+          <tr><td><strong>Marge moyenne/tonne</strong></td><td>≈ 2 874 MAD/T</td><td>Après déduction HRC, transformation, zinc/peinture</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="block-title" style="margin-top:2rem">Fichiers de sortie exportés</h3>
+    <div class="output-grid">
+      <div class="output-card">
+        <div class="out-icon">📊</div>
+        <h4>resultats_complets.xlsx</h4>
+        <p>4 onglets : Commandes, Plan_Marche, Utilisation_Lignes, Shadow_Prices</p>
+        <code>outputs/resultats_complets.xlsx</code>
+      </div>
+      <div class="output-card">
+        <div class="out-icon">📄</div>
+        <h4>plan_marche.csv</h4>
+        <p>Tonnage par ligne × semaine × famille. Livrable opérationnel pour la Planification.</p>
+        <code>outputs/plan_marche.csv</code>
+      </div>
+      <div class="output-card">
+        <div class="out-icon">📄</div>
+        <h4>commandes_resultats.csv</h4>
+        <p>Toutes les commandes avec tonnage livré, taux de service, chemin choisi, marge.</p>
+        <code>outputs/commandes_resultats.csv</code>
+      </div>
+      <div class="output-card">
+        <div class="out-icon">📄</div>
+        <h4>shadow_prices.csv</h4>
+        <p>Prix duaux de toutes les contraintes saturées, triés par valeur absolue décroissante.</p>
+        <code>outputs/shadow_prices.csv</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 7 : QUESTIONS ─────────────────────────────────────── -->
+  <section class="doc-section" id="questions">
+    <div class="section-header">
+      <span class="section-number">07</span>
+      <div>
+        <h2 class="section-title">Réponses aux 34 Questions</h2>
+        <p class="section-subtitle">Localisation des réponses aux questions E1–E24 et B1–B10</p>
+      </div>
+    </div>
+
+    <div class="q-grid">
+      <!-- ─── GROUPE 1 : COMPRÉHENSION DU PROBLÈME ─── -->
+      <div class="q-group">
+        <h3 class="q-group-title">🔍 1. Analyse &amp; Compréhension du Problème (E1–E4, B1)</h3>
+
+        <!-- E1 -->
+        <details class="q-item-details" id="qe1">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E1</span>
+            <strong>Question business &amp; Différence avec un calcul de coût simple</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p><strong>Question business globale :</strong> Comment planifier de manière optimale la production sur un horizon de 4 semaines, en sélectionnant les commandes à accepter et en déterminant leurs chemins de production associés, afin de maximiser la marge sur coût variable totale de l'usine, tout en respectant les contraintes industrielles et de matières premières ?</p>
+            <p><strong>Différence avec un simple calcul de coût :</strong> Un calcul de coût unitaire classique évalue de façon isolée le coût de revient d'une commande sans tenir compte de la saturation des ressources. L'optimisation sous contraintes (Recherche Opérationnelle) arbitre de façon systémique entre les commandes. Elle prend en compte le <strong>coût d'opportunité</strong> d'allouer une ressource saturée (comme le laminoir CRMB ou la ligne de galvanisation LGA) à un produit plutôt qu'à un autre, maximisant le profit global de l'usine.</p>
+          </div>
+        </details>
+
+        <!-- E2 -->
+        <details class="q-item-details" id="qe2">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E2</span>
+            <strong>Schémas des flux métallurgiques et points de routage</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Les flux métallurgiques pour chaque famille de produits sont définis ainsi :</p>
+            <ul>
+              <li><strong>CRC :</strong> HRC &rarr; PK &rarr; CRMB &rarr; BAF &rarr; SKP &rarr; CRC (Pas de routage alternatif, flux unique).</li>
+              <li><strong>HDG :</strong> HRC &rarr; PK &rarr; {CRMA ou CRMB} &rarr; {LGA ou LGB} &rarr; HDG (Points de branchement : choix du laminoir et choix de la ligne de galvanisation en aval).</li>
+              <li><strong>PPGI :</strong> HRC &rarr; PK &rarr; {CRMA ou CRMB} &rarr; LGA &rarr; PPGI (Ligne LGB non compatible. Point de branchement : choix du laminoir).</li>
+              <li><strong>BACR :</strong> Deux voies coexistent :
+                <ul>
+                  <li><em>Voie A (thermique) :</em> HRC &rarr; PK &rarr; CRMB &rarr; BAF &rarr; LGB &rarr; BACR.</li>
+                  <li><em>Voie B (directe) :</em> HRC &rarr; PK &rarr; {CRMA ou CRMB} &rarr; {LGA ou LGB} &rarr; BACR.</li>
+                </ul>
+              </li>
+              <li><strong>HRC DEC :</strong> HRC &rarr; PK &rarr; HRC DEC (Processus simple).</li>
+            </ul>
+            <p><strong>Points de confluence :</strong> L'entrée des laminoirs CRMA/CRMB, le recuit thermique BAF, et les lignes de galvanisation LGA/LGB reçoivent des flux mélangés de différentes familles, ce qui crée des goulots partagés.</p>
+          </div>
+        </details>
+
+        <!-- E3 -->
+        <details class="q-item-details" id="qe3">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E3</span>
+            <strong>Familles contraintes et grades limitants (analyse a priori)</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p><strong>Familles les plus contraintes :</strong> Les familles <strong>HDG</strong> et <strong>PPGI</strong> sont fortement contraintes car elles partagent la ligne de galvanisation <strong>LGA</strong>, qui est le goulot d'étranglement majeur. De plus, la famille <strong>CRC</strong> est limitée par le couple <strong>CRMB</strong> (laminoir polyvalent saturé) et le recuit <strong>BAF</strong>.</p>
+            <p><strong>Grades limitants :</strong> Les grades <strong>DC01</strong> (très demandé par le carnet de commandes pour le laminage à froid et la galvanisation) et <strong>S320</strong> sont les plus susceptibles d'être limitants, d'autant que le stock initial et la disponibilité du grade S320 en HRC sont extrêmement réduits par rapport à la demande totale.</p>
+          </div>
+        </details>
+
+        <!-- E4 -->
+        <details class="q-item-details" id="qe4">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E4</span>
+            <strong>Les trois leviers principaux du planificateur</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Les trois leviers activables par le planificateur sont :</p>
+            <ol>
+              <li><strong>Le routage industriel (Variables de décision) :</strong> Choisir dynamiquement par quel chemin métallurgique faire passer chaque commande de HDG, PPGI, et BACR afin de contourner les goulots d'étranglement saturés.</li>
+              <li><strong>L'approvisionnement en HRC (Paramètre fixe) :</strong> Négocier les volumes de matière première disponibles par grade en entrée (disponibilité HRC).</li>
+              <li><strong>Le planning de maintenance (Paramètre fixe) :</strong> Planifier ou décaler les jours d'arrêt préventif sur les lignes de production afin de libérer de la capacité utile hebdomadaire.</li>
+            </ol>
+          </div>
+        </details>
+
+        <!-- B1 -->
+        <details class="q-item-details" id="qb1">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B1</span>
+            <strong>Question du Directeur Commercial &amp; Intégration au modèle</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p><strong>Question commerciale :</strong> Quelle politique de prix (pricing) devrions-nous adopter pour nos différents produits, et quel est le prix de vente minimal (prix de réserve) pour lequel nous devrions accepter une commande hors carnet ?</p>
+            <p><strong>Comment l'intégrer :</strong> Ce prix minimal d'acceptation pour une nouvelle commande <code>i</code> se calcule en sommant son coût de revient direct (HRC, transformation, zinc/peinture) et le coût d'opportunité d'utilisation des lignes saturées. Ce coût d'opportunité est obtenu en multipliant l'empreinte de la commande sur chaque ligne saturée par le <strong>shadow price</strong> de cette ligne en cette semaine-là.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- ─── GROUPE 2 : FORMULATION MATHÉMATIQUE ─── -->
+      <div class="q-group">
+        <h3 class="q-group-title">📐 2. Formulation Mathématique (E5–E10, B2–B4)</h3>
+
+        <!-- E5 -->
+        <details class="q-item-details" id="qe5">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E5</span>
+            <strong>Variables de décision du modèle</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>La variable de décision principale est :</p>
+            <p><code>x[i, k]</code> : tonnage de la commande <code>i</code> produit par le chemin métallurgique <code>k</code>.</p>
+            <ul>
+              <li><strong>Domaine :</strong> Réel continu positif ou nul (<code>&ge; 0</code>). (La relaxation linéaire est appliquée conformément aux consignes).</li>
+              <li><strong>Indexation :</strong> <code>i &isin; [0..64]</code> (commandes du carnet filtré), <code>k &isin; CheminsPossibles[Famille_i]</code>.</li>
+              <li><strong>Interprétation :</strong> Quantité physique en tonnes de produit fini de la commande <code>i</code> planifiée et livrée via le chemin <code>k</code>.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- E6 -->
+        <details class="q-item-details" id="qe6">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E6</span>
+            <strong>Fonction objectif complète</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>L'objectif est de maximiser la marge sur coût variable totale :</p>
+            <p>$$\max \sum_{i, k} \text{marge\_unitaire}[i, k] \times x[i, k]$$</p>
+            <p>Où la marge nette par tonne <code>marge_unitaire[i, k]</code> est calculée pour chaque couple commande-chemin :</p>
+            <p>$$\text{marge\_unitaire}[i, k] = Prix\_vente_i - Prix\_HRC_{i,k} \cdot \frac{1}{\rho_k} - Co\hat{u}t\_transformation_{i,k} + Valorisation\_chutes_{i,k} - Co\hat{u}ts\_extras_i$$</p>
+            <ul>
+              <li><strong>Prix_vente :</strong> Prix unitaire négocié avec le client (MAD/T).</li>
+              <li><strong>Prix_HRC / &rho;_k :</strong> Coût d'achat de la bobine HRC nécessaire pour 1T de produit fini, ajusté par le rendement global du chemin &rho;_k.</li>
+              <li><strong>Coût_transformation :</strong> Somme des coûts variables de chaque étape de transformation sur le chemin (ajustés des rendements intermédiaires).</li>
+              <li><strong>Valorisation_chutes :</strong> Recette marginale générée par la revente de la ferraille de chutes : <code>(1/&rho;_k - 1) &times; Prix_chutes &times; 50%</code> (car la fraction de chutes valorisable en ferraille est de 50%).</li>
+              <li><strong>Coûts_extras :</strong> Coût du zinc consommé pour le HDG, ou du zinc et de la peinture pour le PPGI.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- E7 -->
+        <details class="q-item-details" id="qe7">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E7</span>
+            <strong>Contraintes de capacité des lignes</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Pour chaque ligne physique <code>L</code> (PK, CRMA, CRMB, BAF, SKP, LGA, LGB) et chaque semaine <code>s &isin; [1..4]</code> :</p>
+            <p>$$\sum_{i, k | L \in k \text{ et } sem_i = s} \text{coeff\_charge}[k, L] \times x[i, k] \le CapNet_{L, s}$$</p>
+            <ul>
+              <li><strong>coeff_charge[k, L] :</strong> Tonnage brut devant passer par la ligne <code>L</code> pour chaque tonne de produit fini en sortie. Il est égal à <code>1 / (rendement_cumulé_avant_L)</code>.</li>
+              <li><strong>CapNet[L, s] :</strong> Capacité nette hebdomadaire de la ligne (T/semaine), égale à <code>Cadence[L] &times; (7 - Arrets[L, s])</code>, où <code>Arrets[L, s]</code> représente les jours d'arrêt planifiés pour maintenance cette semaine-là.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- E8 -->
+        <details class="q-item-details" id="qe8">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E8</span>
+            <strong>Contraintes de bilan matière &amp; conservation des flux</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p><strong>1. Limite de commande (C1) :</strong> Pour chaque commande <code>i</code>, le tonnage livré via tous les chemins admissibles ne peut excéder le tonnage demandé par le client :</p>
+            <p>$$\sum_{k} x[i, k] \le Tonnage\_demande_i$$</p>
+            <p><strong>2. Stock minimum de sécurité produits finis (C4) :</strong> Pour chaque famille de produits (CRC, HDG, PPGI, BACR), la quantité totale produite sur l'horizon de 4 semaines, additionnée au stock initial, doit être supérieure ou égale au stock de sécurité minimal requis :</p>
+            <p>$$\sum_{i | famille_i = F} \sum_{k} x[i, k] + StockInit_F \ge StockMin_F \implies \sum_{i, k} x[i, k] \ge \max(0, StockMin_F - StockInit_F)$$</p>
+          </div>
+        </details>
+
+        <!-- E9 -->
+        <details class="q-item-details" id="qe9">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E9</span>
+            <strong>Contraintes de matières premières (HRC)</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Pour chaque grade d'acier <code>G</code> (DC01, DD13, DX51, DX52, S320), la consommation totale cumulée de HRC en entrée de l'usine ne doit pas dépasser la disponibilité globale (disponibilité d'approvisionnement durant le mois + stock initial disponible aux décapages) :</p>
+            <p>$$\sum_{i | grade_i = G} \sum_{k} \text{hrc\_requis}[k] \times x[i, k] \le Dispo\_HRC_G + StockInit\_PK_G$$</p>
+            <p>Où <code>hrc_requis[k] = 1 / &rho;_k</code> représente la quantité de HRC (matière brute) nécessaire pour obtenir une tonne de produit fini via le chemin <code>k</code>.</p>
+          </div>
+        </details>
+
+        <!-- E10 -->
+        <details class="q-item-details" id="qe10">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E10</span>
+            <strong>Cohérence dimensionnelle</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>La cohérence dimensionnelle est respectée à chaque équation :</p>
+            <ul>
+              <li><strong>Variables $x[i, k]$ :</strong> Exprimées en Tonnes (T).</li>
+              <li><strong>Fonction Objectif :</strong> $\text{Marge\_unitaire} (\text{MAD/T}) \times x (\text{T}) = \text{MAD}$ (Monnaie, cohérent).</li>
+              <li><strong>Contraintes de Capacité :</strong> $\text{Coefficient (adimensionnel)} \times x (\text{T}) = \text{T}$, qui est comparé à la capacité maximale exprimée en Tonnes (T).</li>
+              <li><strong>Contraintes HRC et Stock :</strong> Comparaison directe de grandeurs physiques exprimées en Tonnes (T).</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- B2 -->
+        <details class="q-item-details" id="qb2">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B2</span>
+            <strong>Livraisons en retard &amp; Retards admissibles</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Pour gérer les retards, on modélise des variables $x[i, k, s]$ indexées également par la semaine de livraison effective $s \ge sem_i$.</p>
+            <p>La fonction objectif soustrait pour chaque semaine de retard une pénalité :</p>
+            <p>$$\text{Pénalité\_retard} = Co\hat{u}t\_retard_{prio} \times (s - sem_i) \times x[i, k, s]$$</p>
+            <p>Les contraintes de capacité des lignes à la semaine $s$ somment alors les charges issues des commandes livrées (en retard ou à l'heure) en cette semaine $s$.</p>
+          </div>
+        </details>
+
+        <!-- B3 -->
+        <details class="q-item-details" id="qb3">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B3</span>
+            <strong>Intégration des coûts de stockage</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Le stock de produits finis pour la famille $F$ en fin de semaine $s$ est défini par l'équation de bilan de stock :</p>
+            <p>$$Stock_{F, s} = Stock_{F, s-1} + Production_{F, s} - Ventes_{F, s}$$</p>
+            <p>On ajoute dans la fonction objectif le terme de coût de stockage suivant à minimiser :</p>
+            <p>$$Co\hat{u}t\_Stock\_Total = \sum_{F, s} Co\hat{u}tStock_F \times Stock_{F, s}$$</p>
+            <p>Cela pousse le modèle à synchroniser la production avec les échéances des commandes pour éviter de stocker inutilement du produit fini (production en flux tendu).</p>
+          </div>
+        </details>
+
+        <!-- B4 -->
+        <details class="q-item-details" id="qb4">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B4</span>
+            <strong>Variables binaires de campagne de production</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>On définit des variables binaires $z[L, F, s] \in \{0, 1\}$ valant 1 si la ligne $L$ fabrique la famille $F$ en semaine $s$, et 0 sinon.</p>
+            <p>On impose les contraintes de taille de lot minimale (ex: 100 tonnes) pour éviter les micro-campagnes non économiques :</p>
+            <p>$$Production_{L, F, s} \ge 100 \times z[L, F, s]$$</p>
+            <p>$$Production_{L, F, s} \le CapNet_{L, s} \times z[L, F, s]$$</p>
+            <p>Le modèle devient un programme linéaire mixte en nombres entiers (MIP), résolu par Branch-and-Bound.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- ─── GROUPE 3 : RÉSOLUTION & IMPLÉMENTATION ─── -->
+      <div class="q-group">
+        <h3 class="q-group-title">💻 3. Résolution &amp; Implémentation (E11–E15, B5–B6)</h3>
+
+        <!-- E11 -->
+        <details class="q-item-details" id="qe11">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E11</span>
+            <strong>Choix de l'outil de résolution (PuLP vs Pyomo)</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p><strong>PuLP (Choisi) :</strong> Écrit en Python pur, il offre une syntaxe extrêmement simple et intuitive pour déclarer des variables et contraintes. Il inclut nativement le solveur open-source <strong>CBC</strong>, ce qui évite toute phase d'installation laborieuse d'un solveur externe sur Windows.</p>
+            <p><strong>Pyomo :</strong> Plus puissant pour les modèles de très grande taille ou complexes (ex: non-linéaires), mais nécessite l'installation manuelle et la configuration de solveurs externes (comme GLPK ou Gurobi), et possède une syntaxe plus rigide et verbeuse.</p>
+          </div>
+        </details>
+
+        <!-- E12 -->
+        <details class="q-item-details" id="qe12">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E12</span>
+            <strong>Architecture du code en Python</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Le projet est structuré comme décrit dans le README :</p>
+            <ul>
+              <li><code>src/data_loader.py</code> : Charge et nettoie les données Excel (pandas, openpyxl).</li>
+              <li><code>src/model.py</code> : Construit et résout le programme linéaire à l'aide de PuLP.</li>
+              <li><code>main.py</code> : Script CLI permettant d'exécuter l'optimisation par scénario.</li>
+              <li><code>app.py</code> : Interface Streamlit interactive de simulation.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- E13 -->
+        <details class="q-item-details" id="qe13">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E13</span>
+            <strong>Solution optimale du modèle de base</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>La résolution donne les résultats optimaux suivants :</p>
+            <ul>
+              <li><strong>Valeur de la fonction objectif (Marge Totale) :</strong> <code>42 893 888 MAD</code> (~42.9 MMAD).</li>
+              <li><strong>Taux de service global :</strong> <code>88.0 %</code> (14 929 tonnes livrées sur 16 958 tonnes demandées).</li>
+              <li><strong>Commandes refusées :</strong> <code>8</code> commandes sur 65 (taux de livraison &lt; 5%).</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- E14 -->
+        <details class="q-item-details" id="qe14">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E14</span>
+            <strong>Plan de marche détaillé par ligne</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Le plan de marche (tonnes produites par famille et semaine) est exporté dans <code>outputs/plan_marche.csv</code> et visualisable sous forme de heatmap dans l'application web. On y observe la saturation des goulots CRMB et LGA en semaine 1, et de BAF en semaine 3.</p>
+          </div>
+        </details>
+
+        <!-- E15 -->
+        <details class="q-item-details" id="qe15">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E15</span>
+            <strong>Vérification a posteriori et script de test</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>La validation est codée de façon indépendante dans <code>tests/test_model.py</code>. Elle parcourt le plan de production optimal et recalcule les charges et consommations pour vérifier qu'aucune capacité de ligne n'est dépassée (capacité brute &le; capacité max) et que les contraintes HRC et stocks de sécurité sont strictement respectées.</p>
+          </div>
+        </details>
+
+        <!-- B5 -->
+        <details class="q-item-details" id="qb5">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B5</span>
+            <strong>Arbre de Branch-and-Bound pour les binaires</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Le cas de base est formulé comme un problème linéaire continu pur (LP relaxation). Il est résolu instantanément (en moins d'une seconde) par l'algorithme du Simplexe, sans nécessiter d'arbre de Branch-and-Bound (0 nœud exploré). Les variables binaires n'interviennent que dans les scénarios avec campagnes de production (B4).</p>
+          </div>
+        </details>
+
+        <!-- B6 -->
+        <details class="q-item-details" id="qb6">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B6</span>
+            <strong>Interface utilisateur interactive Streamlit</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>L'interface web interactive a été implémentée dans <code>app.py</code>. Elle permet de :</p>
+            <ul>
+              <li>Visualiser les KPI clés (Marge, Taux de service, Commandes refusées).</li>
+              <li>Sélectionner dynamiquement les scénarios industriels et financiers dans la barre latérale.</li>
+              <li>Consulter le plan de marche, les goulots d'étranglement et les shadow prices via des graphiques interactifs (Plotly).</li>
+              <li>Télécharger les résultats au format CSV et Excel.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
+      <!-- ─── GROUPE 4 : ANALYSE DES RÉSULTATS ─── -->
+      <div class="q-group">
+        <h3 class="q-group-title">📊 4. Analyse Approfondie des Résultats (E16–E19, B7)</h3>
+
+        <!-- E16 -->
+        <details class="q-item-details" id="qe16">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E16</span>
+            <strong>Taux d'utilisation hebdomadaire &amp; Goulots d'étranglement</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Taux d'utilisation des lignes clés (scénario de base) :</p>
+            <ul>
+              <li><strong>CRMB (Laminoir) :</strong> S1 = <code>99.6%</code> (Goulot), S2 = <code>82.9%</code>, S3 = <code>55.5%</code>, S4 = <code>37.0%</code>.</li>
+              <li><strong>LGA (Galvanisation) :</strong> S1 = <code>100.0%</code> (Goulot), S2 = <code>68.4%</code>, S3 = <code>28.4%</code>, S4 = <code>13.1%</code>.</li>
+              <li><strong>BAF (Recuit BAF) :</strong> S1 = <code>64.0%</code>, S2 = <code>23.6%</code>, S3 = <code>100.0%</code> (Goulot), S4 = <code>84.0%</code>.</li>
+              <li><strong>LGB (Galvanisation) :</strong> S1 = <code>77.4%</code>, S2 = <code>55.1%</code>, S3 = <code>36.3%</code>, S4 = <code>18.5%</code>.</li>
+              <li><strong>CRMA (Laminoir) :</strong> <code>0%</code> sur les 4 semaines (Ligne non chargée dans le cas de base).</li>
+            </ul>
+            <p><strong>Conclusion :</strong> Les goulots majeurs sont le laminoir <strong>CRMB</strong> et la ligne de galvanisation <strong>LGA</strong> en semaine 1 (qui saturent la production), ainsi que la ligne thermique <strong>BAF</strong> en semaine 3.</p>
+          </div>
+        </details>
+
+        <!-- E17 -->
+        <details class="q-item-details" id="qe17">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E17</span>
+            <strong>Commandes refusées et contraintes bloquantes</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Les 8 commandes refusées sont :</p>
+            <ul>
+              <li><strong>CMD-032 (CRC, DX51, S1, 576T, Haute) :</strong> Refusée en raison de la saturation du laminoir <strong>CRMB</strong> en S1 (chargé à 99.6%). Le modèle alloue préférentiellement la capacité de CRMB à des commandes générant une meilleure marge par heure ou pour respecter les stocks de sécurité.</li>
+              <li><strong>Les commandes de grade S320 (CMD-010, CMD-023, CMD-027, CMD-047, CMD-050, CMD-053) :</strong> Refusées car la disponibilité totale de matière première en HRC de grade <strong>S320</strong> est saturée (disponibilité épuisée).</li>
+              <li><strong>CMD-030 (CRC, DX51, S1, 87T, Basse) :</strong> Refusée par arbitrage de marge sur les goulots en S1.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- E18 -->
+        <details class="q-item-details" id="qe18">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E18</span>
+            <strong>Shadow Prices (prix duaux) et interprétation business</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Les contraintes de demandes saturées ont les shadow prices les plus élevés :</p>
+            <ul>
+              <li><code>dem_CMD_042</code> : <code>4 740.09 MAD</code> (Si on pouvait vendre 1 tonne de plus de la commande CMD-042, la marge globale augmenterait de 4 740 MAD).</li>
+              <li><code>dem_CMD_028</code> : <code>4 520.03 MAD</code>.</li>
+              <li><code>dem_CMD_014</code> : <code>4 290.63 MAD</code>.</li>
+            </ul>
+            <p>Ces shadow prices correspondent à la marge nette unitaire de ces commandes très rentables qui ne sont limitées que par la demande client. Pour les contraintes de capacité saturées (ex: <code>cap_LGA_S1</code> ou <code>cap_CRMB_S1</code>), le shadow price indique le gain marginal apporté par une heure ou une tonne de capacité machine supplémentaire.</p>
+          </div>
+        </details>
+
+        <!-- E19 -->
+        <details class="q-item-details" id="qe19">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E19</span>
+            <strong>Marge moyenne par tonne et priorité des familles</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>La marge moyenne globale sur les produits livrés est de <strong>2 874 MAD/T</strong>.</p>
+            <p><strong>Par famille :</strong></p>
+            <ul>
+              <li>Les familles <strong>PPGI</strong> (pré-laqué) et <strong>HDG</strong> (galvanisé) dégagent les marges unitaires les plus élevées (souvent supérieures à 3 500 MAD/T) en raison de la valeur ajoutée apportée par le zinc et la peinture. Elles sont donc servies en priorité absolue par le modèle.</li>
+              <li>Le <strong>CRC</strong> a une marge unitaire plus faible (commodité) et sert souvent de variable d'ajustement.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- B7 -->
+        <details class="q-item-details" id="qb7">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B7</span>
+            <strong>Commandes la plus et la moins rentables</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p><strong>La plus rentable :</strong> <code>CMD-042</code> (marge de 4 740 MAD/T), servie à 100%.</p>
+            <p><strong>La moins rentable :</strong> Certaines commandes de CRC ou BACR à faible marge unitaire sont néanmoins acceptées par le modèle pour utiliser les capacités résiduelles non saturées (sur les semaines 3 et 4) ou pour satisfaire la contrainte de stock de sécurité minimal de la famille en fin de mois.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- ─── GROUPE 5 : ANALYSE DE SENSIBILITÉ ─── -->
+      <div class="q-group">
+        <h3 class="q-group-title">🔁 5. Analyses de Sensibilité (E20–E22, B8–B9)</h3>
+
+        <!-- E20 -->
+        <details class="q-item-details" id="qe20">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E20</span>
+            <strong>Scénario &laquo; HRC plus cher &raquo; (+10%)</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Une hausse de 10% sur les prix HRC a un impact financier majeur :</p>
+            <ul>
+              <li><strong>Marge totale :</strong> Chute à <code>33 171 395 MAD</code> (soit une perte sèche de <strong>9.72 MMAD</strong>, soit -22.7%).</li>
+              <li><strong>Taux de service :</strong> Baisse à <code>85.2%</code>.</li>
+              <li><strong>Commandes refusées :</strong> Passe à <code>9</code>. La commande <code>CMD-036</code> (HRC DEC, 475T, priorité Haute) est désormais refusée car la hausse de prix rend sa marge négative ou non compétitive par rapport aux autres commandes.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- E21 -->
+        <details class="q-item-details" id="qe21">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E21</span>
+            <strong>Scénario &laquo; panne machine LGB S2 &raquo;</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>La panne de 2 jours supplémentaires sur LGB en semaine 2 n'a <strong>aucun impact</strong> sur la marge totale (42 893 888 MAD) ni sur le taux de service (88.0%) :</p>
+            <ul>
+              <li>L'utilisation de la ligne LGB en semaine 2 augmente simplement de <code>55.1%</code> (cas de base) à <code>77.1%</code>.</li>
+              <li>LGB n'étant pas un goulot en semaine 2, la capacité restante est suffisante pour absorber la panne. Cette information est précieuse pour la maintenance : une panne de 2 jours sur LGB en S2 n'est pas critique pour le plan de livraison.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- E22 -->
+        <details class="q-item-details" id="qe22">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E22</span>
+            <strong>Scénario &laquo; commande urgente HDG 300T &raquo;</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Le modèle **accepte en totalité** la commande urgente (300T de HDG en S1) :</p>
+            <ul>
+              <li><strong>Marge totale :</strong> Passe à <code>44 093 096 MAD</code> (soit un gain net de <strong>1.20 MMAD</strong>).</li>
+              <li><strong>Routage :</strong> Pour contourner la saturation de CRMB et LGA en S1, le modèle utilise désormais la ligne <strong>CRMA</strong> (dont l'utilisation passe à 5.1%) et la ligne <strong>LGB</strong> en S1 (dont l'utilisation passe à 84.9%). Le solveur a réorganisé de façon optimale les chemins de production d'autres commandes pour libérer la place nécessaire.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- B8 -->
+        <details class="q-item-details" id="qb8">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B8</span>
+            <strong>Courbe d'enveloppe de la disponibilité DC01</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Faire varier la disponibilité du grade DC01 montre une courbe de marge croissante par morceaux :</p>
+            <ul>
+              <li>Tant que la contrainte DC01 est saturée, chaque tonne de DC01 supplémentaire apporte une marge marginale égale au shadow price associé.</li>
+              <li>Au-delà d'un seuil de disponibilité (+20%), la contrainte DC01 devient inactive (shadow price = 0), la courbe s'aplatit car ce sont désormais les capacités machines (CRMB/LGA) qui limitent la production.</li>
+            </ul>
+          </div>
+        </details>
+
+        <!-- B9 -->
+        <details class="q-item-details" id="qb9">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B9</span>
+            <strong>Analyse de robustesse aux cadences (variabilité &plusmn;5%)</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Si les cadences réelles varient de &plusmn;5%, le plan de marche optimal calculé à la limite des capacités peut devenir irréalisable (infeasible). Pour s'en prémunir, il est recommandé d'appliquer une <strong>marge de sécurité de 5 à 10%</strong> sur les capacités nominales des lignes goulots dans le modèle (par exemple en réduisant artificiellement le temps disponible à 6.5 jours au lieu de 7), garantissant ainsi un plan robuste aux micro-arrêts.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- ─── GROUPE 6 : RECOMMANDATIONS & LIMITES ─── -->
+      <div class="q-group">
+        <h3 class="q-group-title">💡 6. Recommandations Stratégiques &amp; Limites (E23–E24, B10)</h3>
+
+        <!-- E23 -->
+        <details class="q-item-details" id="qe23">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E23</span>
+            <strong>Trois recommandations stratégiques pour Maghreb Steel</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Sur la base des résultats du simulateur, nous recommandons :</p>
+            <ol>
+              <li><strong>Investir sur le goulot CRMB &amp; LGA :</strong> Augmenter la capacité disponible de ces lignes en S1 (recours aux heures supplémentaires, réduction des temps de réglage, optimisation du calendrier de maintenance).</li>
+              <li><strong>Sécuriser l'approvisionnement en grade S320 :</strong> Négocier une augmentation de la disponibilité des bobines HRC de grade S320 auprès de Bled Solb, car la pénurie de ce grade force le modèle à refuser 6 commandes.</li>
+              <li><strong>Privilégier le mix PPGI / HDG :</strong> Réorienter le carnet commercial vers ces familles à forte valeur ajoutée, qui maximisent l'utilisation de la marge par heure sur la ligne LGA.</li>
+            </ol>
+          </div>
+        </details>
+
+        <!-- E24 -->
+        <details class="q-item-details" id="qe24">
+          <summary class="q-item-summary">
+            <span class="q-badge q-done">E24</span>
+            <strong>Limites du modèle d'optimisation</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Les trois limites principales identifiées sont :</p>
+            <ol>
+              <li><strong>La relaxation continue (relaxation LP) :</strong> Le modèle produit des tonnages fractionnaires pour certaines commandes, alors que la production se fait par bobines entières de poids standard (indivisibles).</li>
+              <li><strong>L'horizon temporel de 4 semaines :</strong> Il ne capture pas l'impact à long terme des choix de planification (contrats-cadres clients, lissage annuel).</li>
+              <li><strong>L'aspect déterministe :</strong> Les cadences, prix et rendements sont supposés parfaits alors qu'ils sont sujets à des aléas quotidiens.</li>
+            </ol>
+          </div>
+        </details>
+
+        <!-- B10 -->
+        <details class="q-item-details" id="qb10">
+          <summary class="q-item-summary">
+            <span class="q-badge q-bonus">B10</span>
+            <strong>Feuille de route d'industrialisation du simulateur</strong>
+          </summary>
+          <div class="q-answer-content">
+            <p>Pour déployer ce simulateur en routine chez Maghreb Steel, la feuille de route est la suivante :</p>
+            <ol>
+              <li><strong>Passage à un modèle MIP (Mixed Integer Programming) :</strong> Intégrer les contraintes de tailles de lot et de bobines entières.</li>
+              <li><strong>Interfaçage ERP :</strong> Connecter le script Python à l'ERP de l'usine pour importer automatiquement le carnet de commandes et les stocks réels au démarrage de la planification.</li>
+              <li><strong>Planification glissante (Rolling Horizon) :</strong> Permettre de recalculer chaque semaine le plan de marche sur un horizon glissant de 4 ou 8 semaines.</li>
+            </ol>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════════ FOOTER -->
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-brand">
+      <span class="footer-logo">🏭</span>
+      <div>
+        <div class="footer-title">Maghreb Steel — Simulateur Capacité-Commande</div>
+        <div class="footer-sub">EMINES UM6P · Projet Recherche Opérationnelle · Promotion 2026</div>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a href="http://localhost:8501" target="_blank" class="footer-link">🚀 Application</a>
+      <a href="#top" class="footer-link">⬆️ Haut de page</a>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
