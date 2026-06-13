@@ -181,6 +181,16 @@ def build_and_solve(
 
         chemins_info = {}
         for ck in chemins_fam:
+            # Check if this path uses LGA or LGB
+            uses_lga = any(ligne == "LGA" for proc, ligne in CHEMINS[ck])
+            uses_lgb = any(ligne == "LGB" for proc, ligne in CHEMINS[ck])
+
+            # Apply thickness limits
+            if uses_lga and epaisseur > 0.6:
+                continue
+            if uses_lgb and epaisseur <= 0.6:
+                continue
+
             rend_cum = 1.0
             cout_transfo = 0.0
             for proc, ligne in CHEMINS[ck]:
@@ -258,29 +268,40 @@ def build_and_solve(
                 # Tonnage traversant cette ligne = x * (1/rend_cum_amont)
                 coeff = 1.0 / rend_cum if rend_cum > 0 else 1.0
                 if ligne in cap_load:
-                    cap_load[ligne][sem].append((coeff, x[i][ck], ck, ligne))
+                    famille_finale = cd["famille"]
+                    cadence = float(cadences.loc[ligne, famille_finale]) if ligne in cadences.index and famille_finale in cadences.columns else 0.0
+                    cap_load[ligne][sem].append((coeff, x[i][ck], ck, ligne, cadence))
                 rend_cum *= rendements.get(proc, 1.0)
 
     for ligne in LIGNES_PHYSIQUES:
         for sem in SEMAINES:
-            # Capacité nette de la ligne sur cette semaine
-            # On prend le max sur les familles (la ligne peut faire plusieurs familles)
-            caps_fam = []
-            for fam in ["HRC_DEC", "CRC", "HDG", "PPGI", "BACR"]:
-                c = get_capacite_nette(ligne, sem, fam, cadences, arrets, JOURS_SEM)
-                if c > 0:
-                    caps_fam.append(c)
-            if not caps_fam:
-                continue
-            # Capacité globale = somme des capacités par famille
-            # (approx conservative: on utilise la capacité multi-famille comme max)
-            cap_max = max(caps_fam)  # T/semaine
+            # Disponibilité nette en jours:
+            col_sem = f"S{sem}"
+            arret = float(arrets.loc[ligne, col_sem]) if ligne in arrets.index and col_sem in arrets.columns else 0.0
+            dispo_jours = JOURS_SEM - arret
 
             terms = cap_load[ligne][sem]
             if not terms:
                 continue
-            lp_terms = [coeff * var for coeff, var, _, _ in terms]
-            prob += (lpSum(lp_terms) <= cap_max, f"cap_{ligne}_S{sem}")
+
+            if dispo_jours <= 0:
+                # La ligne est arrêtée toute la semaine
+                lp_terms = [var for _, var, _, _, _ in terms]
+                if lp_terms:
+                    prob += (lpSum(lp_terms) == 0, f"cap_{ligne}_S{sem}_zero")
+                continue
+
+            # lp_terms: temps consommé par chaque var = (tonnage traversant) / cadence
+            lp_terms = []
+            for coeff, var, ck, _, cadence in terms:
+                if cadence > 0:
+                    lp_terms.append((coeff / cadence) * var)
+                else:
+                    # Si la cadence est 0, le produit ne peut pas passer
+                    prob += (var == 0, f"no_cadence_{ligne}_S{sem}_{ck}_{var.name}")
+
+            if lp_terms:
+                prob += (lpSum(lp_terms) <= dispo_jours, f"cap_time_{ligne}_S{sem}")
 
     # C3 : Disponibilité HRC par grade
     for grade in list(dispo_hrc.keys()):
@@ -390,17 +411,21 @@ def build_and_solve(
     for ligne in LIGNES_PHYSIQUES:
         util_lignes[ligne] = {}
         for sem in SEMAINES:
-            caps_fam = [
-                get_capacite_nette(ligne, sem, fam, cadences, arrets, JOURS_SEM)
-                for fam in ["HRC_DEC","CRC","HDG","PPGI","BACR"]
-            ]
-            cap_max = max(caps_fam) if caps_fam else 0
-            charge = sum(
-                (coeff * (value(var) or 0.0))
-                for coeff, var, _, _ in cap_load[ligne][sem]
-            )
+            col_sem = f"S{sem}"
+            arret = float(arrets.loc[ligne, col_sem]) if ligne in arrets.index and col_sem in arrets.columns else 0.0
+            dispo_jours = JOURS_SEM - arret
+            
+            if dispo_jours <= 0:
+                util_lignes[ligne][sem] = 0.0
+                continue
+                
+            charge_jours = 0.0
+            for coeff, var, _, _, cadence in cap_load[ligne][sem]:
+                if cadence > 0:
+                    charge_jours += (coeff * (value(var) or 0.0)) / cadence
+                    
             util_lignes[ligne][sem] = round(
-                min(charge / cap_max * 100, 100) if cap_max > 0 else 0, 1
+                min(charge_jours / dispo_jours * 100, 100), 1
             )
 
     # Shadow prices
