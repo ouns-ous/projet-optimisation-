@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maghreb Steel — Visualisation des Contraintes</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            navy: '#0f172a',
+                            slate: '#1e293b',
+                            dark: '#030712',
+                            primary: '#3b82f6',
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e',
+                            violet: '#8b5cf6',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- KaTeX CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <!-- Styles personnalisés -->
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.05), transparent 40%),
+                        #030712;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .text-gradient-primary {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-gradient-rose {
+            background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-gradient-emerald {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .katex {
+            font-size: 1.15em !important;
+        }
+        /* Tooltip variable mathématique */
+        .math-var {
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
+            position: relative;
+            cursor: help;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen pb-16 font-sans">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 w-full glass-card border-b border-white/5 py-4 px-6 mb-8">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl">🏭</span>
+                <div>
+                    <h1 class="font-outfit font-extrabold text-xl tracking-tight flex items-center gap-2">
+                        MAGHREB STEEL <span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-sans font-medium">SIMULATEUR RO</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Documentation Visuelle des Contraintes LP</p>
+                </div>
+            </div>
+            <a href="index.html" class="flex items-center space-x-2 bg-slate-800/80 hover:bg-slate-700/80 border border-white/5 px-4 py-2 rounded-xl transition duration-200 text-sm font-semibold group">
+                <span class="group-hover:-translate-x-1 transition-transform duration-200">←</span>
+                <span>Retour au Rapport</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 space-y-12">
+
+        <!-- Intro Hero Section -->
+        <section class="text-center py-6">
+            <h2 class="font-outfit text-4xl sm:text-5xl font-black mb-4">
+                Cartographie des <span class="text-gradient-primary">Contraintes Industrielles</span>
+            </h2>
+            <p class="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
+                Découvrez la traduction visuelle des contraintes mathématiques qui régissent l'optimum opérationnel de l'usine de Tit Mellil.
+            </p>
+        </section>
+
+        <!-- GRID 1: CAPACITÉS DES LIGNES ET DISPONIBILITÉS HRC -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- SECTION 1: CAPACITÉS MACHINES (8 cols) -->
+            <div class="lg:col-span-8 glass-card rounded-3xl p-6 space-y-6">
+                <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">⚡</span>
+                        <div>
+                            <h3 class="font-outfit text-xl font-bold">Capacité Hebdomadaire des Lignes</h3>
+                            <p class="text-xs text-slate-400">Taux de saturation nominal par semaine (S1 à S4)</p>
+                        </div>
+                    </div>
+                    <span class="bg-red-500/10 text-red-400 text-xs px-3 py-1 rounded-full font-semibold border border-red-500/20">3 Goulots Majeurs</span>
+                </div>
+
+                <!-- Lignes progress-bars -->
+                <div class="space-y-6">
+                    <!-- LGA -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold flex items-center gap-2 text-red-400">
+                                🟥 LGA (Galvanisation A)
+                                <span class="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-wider">Goulot S1</span>
+                            </span>
+                            <span class="text-xs text-slate-400">Semaine 1: <strong class="text-red-400">100.0%</strong> | S2: 68.4% | S3: 28.4% | S4: 13.1%</span>
+                        </div>
+                        <div class="h-3.5 bg-slate-950 rounded-full overflow-hidden border border-white/5 flex">
+                            <div class="bg-gradient-to-r from-blue-500 to-red-500 h-full rounded-full transition-all duration-1000" style="width: 100%"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 italic">Saturée en Semaine 1 par les commandes HDG et PPGI à haute marge.</p>
+                    </div>
+
+                    <!-- CRMB -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold flex items-center gap-2 text-red-400">
+                                🟥 CRMB (Laminoir Réversible)
+                                <span class="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-wider">Tension Critique</span>
+                            </span>
+                            <span class="text-xs text-slate-400">Semaine 1: <strong class="text-red-400">99.6%</strong> | S2: 82.9% | S3: 55.5% | S4: 37.0%</span>
+                        </div>
+                        <div class="h-3.5 bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                            <div class="bg-gradient-to-r from-blue-500 via-orange-500 to-red-500 h-full rounded-full" style="width: 99.6%"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 italic">Saturé à 99.6% en S1, empêchant la livraison de la commande de CRC CMD-032 (576 T).</p>
+                    </div>
+
+                    <!-- BAF -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold flex items-center gap-2 text-red-400">
+                                🟥 BAF (Recuit Fours)
+                                <span class="bg-red-500/10 text-red-500 text-[10px] px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-wider">Goulot S3</span>
+                            </span>
+                            <span class="text-xs text-slate-400">Semaine 1: 64.0% | S2: 23.6% | S3: <strong class="text-red-400">100.0%</strong> | S4: 84.0%</span>
+                        </div>
+                        <div class="h-3.5 bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                            <div class="bg-gradient-to-r from-blue-500 to-red-500 h-full rounded-full" style="width: 100%"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 italic">Saturé en Semaine 3 en raison du pic de livraison des commandes de CRC et BACR.</p>
+                    </div>
+
+                    <!-- LGB -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-bold text-emerald-400">🟩 LGB (Galvanisation B)</span>
+                            <span class="text-xs text-slate-400">Semaine 1: 77.4% | S2: 55.1% | S3: 36.3% | S4: 18.5%</span>
+                        </div>
+                        <div class="h-3 bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 77.4%"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 italic">Dispose d'une marge de surcapacité, absorbant l'arrêt technique dans le scénario Panne LGB.</p>
+                    </div>
+
+                    <!-- PK & SKP -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <div class="p-4 bg-slate-900/60 rounded-2xl border border-white/5">
+                            <span class="text-xs text-slate-400 block mb-1">PK (Décapage)</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm font-bold text-emerald-400">Max S1: 55.3%</span>
+                                <span class="text-xs text-slate-500">(Sous-utilisée)</span>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/60 rounded-2xl border border-white/5">
+                            <span class="text-xs text-slate-400 block mb-1">SKP (Skin-Pass)</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm font-bold text-emerald-400">Max S3: 60.6%</span>
+                                <span class="text-xs text-slate-500">(Marge de sécurité)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: DISPONIBILITÉ HRC (4 cols) -->
+            <div class="lg:col-span-4 glass-card rounded-3xl p-6 space-y-6">
+                <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">📦</span>
+                        <div>
+                            <h3 class="font-outfit text-xl font-bold">Approvisionnement HRC</h3>
+                            <p class="text-xs text-slate-400">Stock & Achat max par grade</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grades cards -->
+                <div class="space-y-4">
+                    <!-- S320 -->
+                    <div class="p-4 bg-red-950/20 border border-red-500/20 rounded-2xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-red-400">S320 (Aciers de Structure)</span>
+                            <span class="bg-red-500/20 text-red-400 text-[9px] px-2 py-0.5 rounded-full border border-red-500/30 font-bold uppercase">SATURÉ</span>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Consommation :</span>
+                                <span class="text-lg font-black text-slate-100">785 T / 785 T</span>
+                            </div>
+                            <span class="text-xs text-red-400 font-bold">0% restant</span>
+                        </div>
+                        <div class="h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                            <div class="bg-red-500 h-full" style="width: 100%"></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400">Cette saturation bloque 6 commandes (CMD-010, -023, -027, etc.).</p>
+                    </div>
+
+                    <!-- DC01 -->
+                    <div class="p-4 bg-slate-900/60 border border-white/5 rounded-2xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-slate-200">DC01 (Laminage Standard)</span>
+                            <span class="bg-emerald-500/20 text-emerald-400 text-[9px] px-2 py-0.5 rounded-full border border-emerald-500/30 font-bold uppercase">DISPONIBLE</span>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Consommation :</span>
+                                <span class="text-lg font-black text-slate-200">7 253 T / 11 150 T</span>
+                            </div>
+                            <span class="text-xs text-emerald-400 font-bold">35% restant</span>
+                        </div>
+                        <div class="h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <!-- DX51 -->
+                    <div class="p-4 bg-slate-900/60 border border-white/5 rounded-2xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-slate-200">DX51 (Galvanisation Simple)</span>
+                            <span class="bg-emerald-500/20 text-emerald-400 text-[9px] px-2 py-0.5 rounded-full border border-emerald-500/30 font-bold uppercase">DISPONIBLE</span>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Consommation :</span>
+                                <span class="text-lg font-black text-slate-200">6 502 T / 7 500 T</span>
+                            </div>
+                            <span class="text-xs text-emerald-400 font-bold">13% restant</span>
+                        </div>
+                        <div class="h-1.5 bg-slate-950 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full" style="width: 86.7%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: EXPLORATEUR DE ROUTAGE MÉTALLURGIQUE (FLUX & YIELD) -->
+        <section class="glass-card rounded-3xl p-6">
+            <div class="flex items-center space-x-3 border-b border-white/5 pb-4 mb-6">
+                <span class="text-2xl">🔄</span>
+                <div>
+                    <h3 class="font-outfit text-xl font-bold">Explorateur Interactif de Routage</h3>
+                    <p class="text-xs text-slate-400">Sélectionnez une famille pour mettre en évidence son chemin et ses rendements d'étape</p>
+                </div>
+            </div>
+
+            <!-- Route Buttons -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button onclick="highlightRoute('crc')" id="btn-crc" class="px-4 py-2 rounded-xl text-sm font-semibold border bg-blue-500/20 border-blue-500/30 text-slate-100 transition duration-150">CRC (Cold Rolled Coils)</button>
+                <button onclick="highlightRoute('hdg')" id="btn-hdg" class="px-4 py-2 rounded-xl text-sm font-semibold border border-white/5 bg-slate-900 hover:bg-slate-800 text-slate-400 transition duration-150">HDG (Galvanized)</button>
+                <button onclick="highlightRoute('ppgi')" id="btn-ppgi" class="px-4 py-2 rounded-xl text-sm font-semibold border border-white/5 bg-slate-900 hover:bg-slate-800 text-slate-400 transition duration-150">PPGI (Pre-Painted)</button>
+                <button onclick="highlightRoute('bacr')" id="btn-bacr" class="px-4 py-2 rounded-xl text-sm font-semibold border border-white/5 bg-slate-900 hover:bg-slate-800 text-slate-400 transition duration-150">BACR (Boîtes Métalliques)</button>
+                <button onclick="highlightRoute('dec')" id="btn-dec" class="px-4 py-2 rounded-xl text-sm font-semibold border border-white/5 bg-slate-900 hover:bg-slate-800 text-slate-400 transition duration-150">HRC DEC (Décapé uniquement)</button>
+            </div>
+
+            <!-- Flow Visualizer -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 py-4 text-center">
+                <!-- HRC input -->
+                <div class="p-4 bg-slate-900/60 border border-white/5 rounded-2xl flex flex-col justify-center items-center">
+                    <span class="text-xs text-slate-400">Entrée</span>
+                    <strong class="text-sm block">Bobines HRC</strong>
+                    <span class="text-[10px] text-slate-500">Matière Première</span>
+                </div>
+                <!-- PK step -->
+                <div id="step-pk" class="p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center relative transition duration-300">
+                    <span class="text-xs text-blue-400 font-bold">Étape 1 (Décapage)</span>
+                    <strong class="text-sm block">PK (Pickling)</strong>
+                    <span class="text-[10px] text-blue-400/80">Rendement : 99%</span>
+                </div>
+                <!-- Laminage step -->
+                <div id="step-laminage" class="p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center relative transition duration-300">
+                    <span class="text-xs text-blue-400 font-bold">Étape 2 (Laminage)</span>
+                    <strong id="lam-name" class="text-sm block">CRMB (Laminoir)</strong>
+                    <span class="text-[10px] text-blue-400/80">Rendement : 98%</span>
+                </div>
+                <!-- Traitement/Revêtement step -->
+                <div id="step-traitement" class="p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center relative transition duration-300">
+                    <span id="trait-label" class="text-xs text-blue-400 font-bold">Étape 3 (Recuit thermique)</span>
+                    <strong id="trait-name" class="text-sm block">BAF (Fours)</strong>
+                    <span class="text-[10px] text-blue-400/80">Rendement : 99%</span>
+                </div>
+                <!-- Finition step -->
+                <div id="step-finition" class="p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center relative transition duration-300">
+                    <span id="fini-label" class="text-xs text-blue-400 font-bold">Étape 4 (Finition)</span>
+                    <strong id="fini-name" class="text-sm block">SKP (Skin-Pass)</strong>
+                    <span id="final-yield" class="text-[10px] text-blue-400/80">Rendement : 99%</span>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-4 bg-slate-900/40 rounded-2xl border border-white/5 text-xs text-slate-400">
+                <span class="font-bold text-slate-300">Description du chemin sélectionné :</span>
+                <span id="route-desc" class="block mt-1">HRC → PK → CRMB → BAF → SKP. Ce chemin représente le flux classique des bobines laminées à froid de haute qualité (CRC). Le rendement global est de 95,1% en raison des pertes de découpes et des déclassés.</span>
+            </div>
+        </section>
+
+        <!-- SECTION 4: FORMULATION MATHÉMATIQUE INTERACTIVE (KaTeX) -->
+        <section class="glass-card rounded-3xl p-6 space-y-6">
+            <div class="flex items-center space-x-3 border-b border-white/5 pb-4">
+                <span class="text-2xl">📝</span>
+                <div>
+                    <h3 class="font-outfit text-xl font-bold">Formulation Mathématique Interactive</h3>
+                    <p class="text-xs text-slate-400">Modélisation formelle des contraintes en programmation linéaire</p>
+                </div>
+            </div>
+
+            <!-- Equations grid -->
+            <div class="space-y-6">
+                <!-- Eq 1 -->
+                <div class="p-6 bg-slate-900/40 border border-white/5 rounded-2xl space-y-3">
+                    <h4 class="font-bold text-sm text-blue-400">1. Contrainte de Capacité Hebdomadaire des Lignes Physiques</h4>
+                    <p class="text-xs text-slate-400">Cette contrainte impose que la charge totale induite par les fabrications sur une machine ne dépasse pas sa capacité hebdomadaire disponible (ajustée selon les arrêts de maintenance).</p>
+                    <div class="py-4 overflow-x-auto flex justify-center bg-slate-950/50 rounded-xl">
+                        <span id="eq-capacite"></span>
+                    </div>
+                </div>
+
+                <!-- Eq 2 -->
+                <div class="p-6 bg-slate-900/40 border border-white/5 rounded-2xl space-y-3">
+                    <h4 class="font-bold text-sm text-blue-400">2. Contrainte d'Approvisionnement HRC (Disponibilité par Grade)</h4>
+                    <p class="text-xs text-slate-400">La consommation totale de HRC brut pour chaque grade d'acier (tenant compte des rendements matière de transformation) ne peut excéder le volume d'achat maximum mensuel autorisé cumulé au stock initial disponible aux décapages.</p>
+                    <div class="py-4 overflow-x-auto flex justify-center bg-slate-950/50 rounded-xl">
+                        <span id="eq-matiere"></span>
+                    </div>
+                </div>
+
+                <!-- Eq 3 -->
+                <div class="p-6 bg-slate-900/40 border border-white/5 rounded-2xl space-y-3">
+                    <h4 class="font-bold text-sm text-blue-400">3. Contrainte de Conservation des Flux et Limite de Livrabilité</h4>
+                    <p class="text-xs text-slate-400">On ne livre pas plus que demandé par le client dans son ordre de commande initial. La somme des tonnages livrés sur chaque chemin de la commande $i$ doit être inférieure ou égale au tonnage initial de cette commande.</p>
+                    <div class="py-4 overflow-x-auto flex justify-center bg-slate-950/50 rounded-xl">
+                        <span id="eq-bilan"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-center text-xs text-slate-500">
+        <p>Projet Recherche Opérationnelle — EMINES School of Industrial Management — Promo 2026</p>
+        <p class="mt-1">Maghreb Steel (Tit Mellil Cold Rolling Plant)</p>
+    </footer>
+
+    <!-- Scripts pour KaTeX et Routage -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Rendre les équations avec KaTeX
+            katex.render(
+                "\\sum_{i \\in I, k \\in K_i \\mid L \\in k \\text{ et } \\text{sem}_i = s} \\text{coeff\\_charge}_{k, L} \\cdot x_{i, k} \\le \\text{CapNominale}_{L} \\cdot (7 - \\text{Arr\\^ets}_{L, s}) \\quad \\forall L, s",
+                document.getElementById("eq-capacite"),
+                { displayMode: true, throwOnError: false }
+            );
+
+            katex.render(
+                "\\sum_{i \\in I \\mid \\text{grade}_i = G} \\sum_{k \\in K_i} \\frac{1}{\\rho_k} \\cdot x_{i, k} \\le \\text{DispoHRC}_G + \\text{StockPK}_G \\quad \\forall G",
+                document.getElementById("eq-matiere"),
+                { displayMode: true, throwOnError: false }
+            );
+
+            katex.render(
+                "\\sum_{k \\in K_i} x_{i, k} \\le \\text{Tonnage\\_demande}_i \\quad \\forall i \\in I",
+                document.getElementById("eq-bilan"),
+                { displayMode: true, throwOnError: false }
+            );
+        });
+
+        // Fonction pour changer les routes en fonction de la famille
+        function highlightRoute(family) {
+            // Reset all button styles
+            const buttons = ['btn-crc', 'btn-hdg', 'btn-ppgi', 'btn-bacr', 'btn-dec'];
+            buttons.forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = "px-4 py-2 rounded-xl text-sm font-semibold border border-white/5 bg-slate-900 hover:bg-slate-800 text-slate-400 transition duration-150";
+            });
+
+            // Set active style to clicked button
+            const activeBtn = document.getElementById('btn-' + family);
+            activeBtn.className = "px-4 py-2 rounded-xl text-sm font-semibold border bg-blue-500/20 border-blue-500/30 text-slate-100 transition duration-150";
+
+            // Get elements
+            const stepPk = document.getElementById('step-pk');
+            const stepLaminage = document.getElementById('step-laminage');
+            const stepTraitement = document.getElementById('step-traitement');
+            const stepFinition = document.getElementById('step-finition');
+
+            const lamName = document.getElementById('lam-name');
+            const traitLabel = document.getElementById('trait-label');
+            const traitName = document.getElementById('trait-name');
+            const finiLabel = document.getElementById('fini-label');
+            const finiName = document.getElementById('fini-name');
+            const finalYield = document.getElementById('final-yield');
+            const routeDesc = document.getElementById('route-desc');
+
+            // Reset transitions classes
+            [stepPk, stepLaminage, stepTraitement, stepFinition].forEach(el => {
+                el.className = "p-4 bg-slate-900/60 border border-white/5 rounded-2xl flex flex-col justify-center items-center transition duration-300 text-slate-400";
+            });
+
+            if (family === 'crc') {
+                stepPk.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepLaminage.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepTraitement.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepFinition.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                
+                lamName.innerText = "CRMB (Laminoir)";
+                traitLabel.innerText = "Étape 3 (Recuit)";
+                traitName.innerText = "BAF (Fours)";
+                finiLabel.innerText = "Étape 4 (Finition)";
+                finiName.innerText = "SKP (Skin-Pass)";
+                finalYield.innerText = "Rendement total : 95.1%";
+                routeDesc.innerText = "HRC → PK → CRMB → BAF → SKP. Ce chemin représente le flux classique des bobines laminées à froid de haute qualité (CRC). Le rendement global est de 95,1% en raison des pertes de découpes et des déclassés.";
+            } 
+            else if (family === 'hdg') {
+                stepPk.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepLaminage.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepTraitement.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                
+                lamName.innerText = "CRMA ou CRMB";
+                traitLabel.innerText = "Étape 3 (Revêtement Zinc)";
+                traitName.innerText = "LGA ou LGB (Galva)";
+                finiLabel.innerText = "Étape 4 (Finition)";
+                finiName.innerText = "Aucune (Livraison)";
+                finalYield.innerText = "Rendement total : 96.0%";
+                routeDesc.innerText = "HRC → PK → {CRMA | CRMB} → {LGA | LGB}. Représente le flux de galvanisation. La galvanisation peut être effectuée sur LGA ou LGB. La ligne LGA est saturée à 100% en Semaine 1, faisant de cette contrainte la plus critique pour la famille HDG.";
+            }
+            else if (family === 'ppgi') {
+                stepPk.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepLaminage.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepTraitement.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                
+                lamName.innerText = "CRMA ou CRMB";
+                traitLabel.innerText = "Étape 3 (Galva & Peinture)";
+                traitName.innerText = "LGA (Revêtement)";
+                finiLabel.innerText = "Étape 4 (Finition)";
+                finiName.innerText = "Aucune (Livraison)";
+                finalYield.innerText = "Rendement total : 94.1%";
+                routeDesc.innerText = "HRC → PK → {CRMA | CRMB} → LGA. Le produit pré-laqué (PPGI) passe obligatoirement par la ligne de galvanisation LGA qui applique à la fois la couche de zinc et la peinture. C'est la famille qui subit le plus lourd taux de rejet en raison de la saturation totale de LGA en semaine 1.";
+            }
+            else if (family === 'bacr') {
+                stepPk.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepLaminage.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepTraitement.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                stepFinition.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                
+                lamName.innerText = "CRMB (Laminage)";
+                traitLabel.innerText = "Étape 3 (Recuit)";
+                traitName.innerText = "BAF (Thermique)";
+                finiLabel.innerText = "Étape 4 (Finitions)";
+                finiName.innerText = "LGB (Ligne B)";
+                finalYield.innerText = "Rendement total : 94.1%";
+                routeDesc.innerText = "HRC → PK → CRMB → BAF → LGB. Cette famille (BACR) suit le chemin le plus long et subit des contraintes multiples (saturation de CRMB en S1 et de BAF en S3). Le LGB est utilisé à l'étape finale.";
+            }
+            else if (family === 'dec') {
+                stepPk.className = "p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex flex-col justify-center items-center text-blue-400 transition duration-300";
+                
+                lamName.innerText = "Aucun (Laminage)";
+                traitLabel.innerText = "Étape 3 (Traitement)";
+                traitName.innerText = "Aucun (Traitement)";
+                finiLabel.innerText = "Étape 4 (Finition)";
+                finiName.innerText = "Aucune (Livraison)";
+                finalYield.innerText = "Rendement total : 99.0%";
+                routeDesc.innerText = "HRC → PK → Livraison. Ce produit fini (HRC DEC) ne subit qu'un décapage à l'acide sulfurique sur la ligne PK avant d'être expédié. Son rendement est très élevé (99%) et il n'est contraint que par la disponibilité des bobines de HRC en entrée.";
+            }
+        }
+    </script>
+</body>
+</html>
