@@ -160,17 +160,11 @@ def main():
     if args.scenario == "base":
         resultats = build_and_solve(data_path)
     elif args.scenario == "hrc_cher":
-        resultats = build_and_solve(data_path, hrc_multiplier=1.10)
+        resultats = scenario_hrc_cher(data_path)
     elif args.scenario == "panne_lgb":
-        resultats = build_and_solve(data_path, extra_arrets={"LGB": {2: 2}})
+        resultats = scenario_panne_lgb(data_path)
     elif args.scenario == "commande_urgente":
-        new_cmd = {
-            "ID": "CMD-NEW", "Client": "Nouveau_Client", "Famille": "HDG",
-            "Grade": "DC01", "Epaisseur": 0.5, "Largeur": 1140,
-            "Tonnage": 300, "Prix_vente": 11500, "Semaine_livraison": 1,
-            "Priorite": "Haute"
-        }
-        resultats = build_and_solve(data_path, extra_commandes=[new_cmd])
+        resultats = scenario_commande_urgente(data_path)
     else:
         resultats = build_and_solve(data_path)
 

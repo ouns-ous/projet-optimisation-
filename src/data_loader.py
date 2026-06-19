@@ -99,19 +99,19 @@ def load_data(filepath: str = "data/Donnees_MaghrebSteel.xlsx") -> dict:
 
     current_section = None
     for _, row in df_stock.iterrows():
-        cell = str(row.iloc[0]) if row.iloc[0] is not None else ""
+        cell = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
         if "Stocks PK" in cell:
             current_section = "pk"
         elif "Stocks interprocess" in cell or "interprocess" in cell.lower():
             current_section = "ip"
         elif "Stocks produits finis" in cell or "produits finis" in cell.lower():
             current_section = "fp"
-        elif current_section and row.iloc[0] not in [None, "Grade", "Point de stockage", "Famille", "Stock initial (T)"]:
+        elif current_section and pd.notna(row.iloc[0]) and row.iloc[0] not in ["Grade", "Point de stockage", "Famille", "Stock initial (T)"]:
             try:
                 key = str(row.iloc[0]).strip()
-                val = float(row.iloc[1]) if row.iloc[1] is not None else 0
-                min_v = float(row.iloc[2]) if row.iloc[2] is not None else 0
-                max_v = float(row.iloc[3]) if row.iloc[3] is not None else 9999
+                val = float(row.iloc[1]) if pd.notna(row.iloc[1]) else 0.0
+                min_v = float(row.iloc[2]) if pd.notna(row.iloc[2]) else 0.0
+                max_v = float(row.iloc[3]) if pd.notna(row.iloc[3]) else 99999.0
                 if key and key not in ["nan", "None"] and not key.startswith("Stock"):
                     entry = {"initial": val, "min": min_v, "max": max_v}
                     if current_section == "pk":

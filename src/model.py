@@ -98,6 +98,9 @@ def build_and_solve(
     hrc_multiplier: float = 1.0,
     extra_arrets: dict = None,
     extra_commandes: list = None,
+    dc01_multiplier: float = 1.0,
+    cadence_multiplier: float = 1.0,
+    use_campaigns: bool = False,
 ) -> dict:
     """
     Construit et résout le modèle LP Maghreb Steel.
@@ -107,6 +110,8 @@ def build_and_solve(
         hrc_multiplier: Multiplicateur sur les prix HRC (scénario E20).
         extra_arrets: Arrêts supplémentaires {ligne: {semaine: jours}} (scénario E21).
         extra_commandes: Commandes supplémentaires à ajouter (scénario E22).
+        dc01_multiplier: Multiplicateur sur la disponibilité du HRC grade DC01 (scénario B8).
+        cadence_multiplier: Multiplicateur sur les cadences de production de toutes les lignes (scénario B9).
 
     Returns:
         dict: Résultats complets.
@@ -114,7 +119,7 @@ def build_and_solve(
     # ── Chargement ──────────────────────────────────────────────────────────
     data = load_data(data_path)
     commandes   = data["commandes"].copy()
-    cadences    = data["cadences"]
+    cadences    = data["cadences"].copy()
     rendements  = data["rendements"]
     couts_df    = data["couts_variables"]
     prix_hrc_df = data["prix_hrc"].copy()
@@ -136,6 +141,15 @@ def build_and_solve(
     # Appliquer scénario HRC cher
     if hrc_multiplier != 1.0:
         prix_hrc_df = prix_hrc_df * hrc_multiplier
+
+    # Appliquer multiplicateur DC01
+    if dc01_multiplier != 1.0:
+        if "DC01" in dispo_hrc:
+            dispo_hrc["DC01"] *= dc01_multiplier
+
+    # Appliquer multiplicateur de cadences
+    if cadence_multiplier != 1.0:
+        cadences = cadences * cadence_multiplier
 
     # Appliquer arrêts supplémentaires
     if extra_arrets:
@@ -177,7 +191,7 @@ def build_and_solve(
         if famille == "HDG":
             cout_extras = PRIX_ZINC * CONSO_ZINC
         elif famille == "PPGI":
-            cout_extras = PRIX_ZINC * CONSO_ZINC_P + PRIX_PEINTURE * CONSO_PEINTURE
+            cout_extras = PRIX_ZINC * CONSO_ZINC_P
 
         chemins_info = {}
         for ck in chemins_fam:
@@ -268,8 +282,7 @@ def build_and_solve(
                 # Tonnage traversant cette ligne = x * (1/rend_cum_amont)
                 coeff = 1.0 / rend_cum if rend_cum > 0 else 1.0
                 if ligne in cap_load:
-                    famille_finale = cd["famille"]
-                    cadence = float(cadences.loc[ligne, famille_finale]) if ligne in cadences.index and famille_finale in cadences.columns else 0.0
+                    cadence = _get_cadence_for_chemin_ligne(ck, ligne, cadences)
                     cap_load[ligne][sem].append((coeff, x[i][ck], ck, ligne, cadence))
                 rend_cum *= rendements.get(proc, 1.0)
 
@@ -334,6 +347,67 @@ def build_and_solve(
                 prod_terms.extend(x[i][ck] for ck in cd["chemins"])
         if prod_terms:
             prob += (lpSum(prod_terms) >= besoin, f"stock_min_{fam_key.replace(' ','_')}")
+
+    # C5 : Campagnes de production (B4) - Variables binaires z[ligne, famille, semaine]
+    z_vars = {}
+    if use_campaigns:
+        FAMILLES = ["CRC", "HDG", "PPGI", "BACR", "HRC DEC"]
+        # Déclarer les variables binaires
+        for l in LIGNES_PHYSIQUES:
+            z_vars[l] = {}
+            for f in FAMILLES:
+                z_vars[l][f] = {}
+                for s in SEMAINES:
+                    z_vars[l][f][s] = LpVariable(f"z_{l}_{f.replace(' ','_')}_{s}", cat="Binary")
+
+        # Initialiser le dictionnaire pour accumuler le tonnage par (ligne, famille, semaine)
+        tonnage_fam_ligne_sem = {
+            l: {f: {s: [] for s in SEMAINES} for f in FAMILLES}
+            for l in LIGNES_PHYSIQUES
+        }
+
+        # Remplir le dictionnaire avec les expressions des variables de décision x
+        for cd in cmd_data:
+            i   = cd["i"]
+            sem = cd["semaine"]
+            fam = cd["famille"]
+            for ck, ci in cd["chemins"].items():
+                rend_cum = 1.0
+                for proc, ligne in CHEMINS[ck]:
+                    coeff = 1.0 / rend_cum if rend_cum > 0 else 1.0
+                    if ligne in tonnage_fam_ligne_sem and fam in tonnage_fam_ligne_sem[ligne]:
+                        tonnage_fam_ligne_sem[ligne][fam][sem].append(coeff * x[i][ck])
+                    rend_cum *= rendements.get(proc, 1.0)
+
+        # Ajouter les contraintes de couplage
+        TONNAGE_MIN_CAMPAGNE = 100.0
+        for l in LIGNES_PHYSIQUES:
+            for f in FAMILLES:
+                cadence = 0.0
+                if l in cadences.index and f in cadences.columns:
+                    try:
+                        cadence = float(cadences.loc[l, f])
+                    except (ValueError, TypeError):
+                        pass
+                
+                for s in SEMAINES:
+                    exprs = tonnage_fam_ligne_sem[l][f][s]
+                    if not exprs:
+                        continue
+                    
+                    # Big M dynamique : 1.2 * Capacité max de la ligne sur la semaine
+                    big_M = max(20000.0, cadence * 7 * 1.2)
+                    
+                    # Contrainte d'activation (Big M)
+                    prob += (
+                        lpSum(exprs) <= big_M * z_vars[l][f][s],
+                        f"campagne_max_{l}_{f.replace(' ','_')}_S{s}"
+                    )
+                    # Contrainte de tonnage minimum par campagne
+                    prob += (
+                        lpSum(exprs) >= TONNAGE_MIN_CAMPAGNE * z_vars[l][f][s],
+                        f"campagne_min_{l}_{f.replace(' ','_')}_S{s}"
+                    )
 
     # ── Résolution ────────────────────────────────────────────────────────────
     import sys, io
@@ -443,6 +517,23 @@ def build_and_solve(
         marge_par_famille[fam] = marge_par_famille.get(fam, 0) + r["marge_totale_cmd"]
         tonnage_par_famille[fam] = tonnage_par_famille.get(fam, 0) + r["tonnage_livre"]
 
+    # Campagnes actives
+    active_campaigns = []
+    if use_campaigns:
+        FAMILLES = ["CRC", "HDG", "PPGI", "BACR", "HRC DEC"]
+        for l in LIGNES_PHYSIQUES:
+            for f in FAMILLES:
+                for s in SEMAINES:
+                    if l in z_vars and f in z_vars[l] and s in z_vars[l][f]:
+                        val_z = value(z_vars[l][f][s])
+                        if val_z and val_z > 0.5:
+                            active_campaigns.append({
+                                "Ligne": l,
+                                "Famille": f,
+                                "Semaine": s,
+                                "Valeur": round(val_z, 2)
+                            })
+
     return {
         "status":                 status,
         "marge_totale":           marge_totale,
@@ -460,6 +551,8 @@ def build_and_solve(
         "cmd_data":               cmd_data,
         "prob":                   prob,
         "cap_load":               cap_load,
+        "use_campaigns":          use_campaigns,
+        "active_campaigns":       active_campaigns,
     }
 
 
