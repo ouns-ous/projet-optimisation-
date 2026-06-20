@@ -116,11 +116,11 @@ Marge = Σ_{i,k} [ Prix_vente[i] − Prix_HRC[i] × (1/ρ_k)
 
 | Indicateur | Valeur |
 |------------|--------|
-| Marge totale | ~42.9 MMAD |
-| Taux de service | 88.0% |
-| Tonnage livré | ~14,929 T |
-| Commandes refusées | 8 |
-| Goulot principal | CRMB (99.6% S1) + LGA (100% S1) |
+| Marge totale | ~34.7 MMAD |
+| Taux de service | 73.5% |
+| Tonnage livré | ~12,500 T |
+| Commandes refusées | 14 / 65 |
+| Goulot principal | LGA (100% S1) + CRMB (99.6% S1) + Dispo HRC S320 |
 
 ---
 
